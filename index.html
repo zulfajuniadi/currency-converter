@@ -1,238 +1,310 @@
 <!doctype html>
-<html lang="en">
+<html lang="ms">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tukar">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Guangzhou">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#EAF0ED" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1A17" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
-<title>Tukar – currency converter</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Trip Guangzhou</title>
 <style>
 :root{
-  --bg:#EAF0ED; --surface:#F7FAF8; --ink:#12302B; --muted:#5B726C;
-  --from:#1F5A4C; --to:#6A3F94; --line:#CBD8D2; --field:#DFE8E4;
-  color-scheme:light;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EAF0ED;--surface:#F7FAF8;--ink:#12302B;--muted:#5B726C;
+  --from:#1F5A4C;--to:#6A3F94;--line:#CBD8D2;--field:#DFE8E4;--today:#FFF6D8;--todayline:#D9B44A;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#0E1A17; --surface:#15241F; --ink:#E3EEEA; --muted:#8FA8A0;
-    --from:#78C7AF; --to:#C2A6E2; --line:#28403A; --field:#1D302A;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0E1A17; --surface:#15241F; --ink:#E3EEEA; --muted:#8FA8A0;
-  --from:#78C7AF; --to:#C2A6E2; --line:#28403A; --field:#1D302A;
-  color-scheme:dark;
-}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1A17;--surface:#15241F;--ink:#E3EEEA;--muted:#8FA8A0;--from:#78C7AF;--to:#C2A6E2;
+  --line:#28403A;--field:#1D302A;--today:#2B2A1A;--todayline:#B8973A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1A17;--surface:#15241F;--ink:#E3EEEA;--muted:#8FA8A0;--from:#78C7AF;--to:#C2A6E2;
+  --line:#28403A;--field:#1D302A;--today:#2B2A1A;--todayline:#B8973A;color-scheme:dark}
 *,*::before,*::after{box-sizing:inherit}
-html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
-body{
-  margin:0;min-height:100%;background:var(--bg);color:var(--ink);
-  font-family:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent;
-}
-main{max-width:440px;margin:0 auto;padding:20px 20px 32px}
-.pane{background:var(--surface);border-radius:22px;padding:18px 18px 20px;position:relative}
-.pane.from{border-bottom-left-radius:6px;border-bottom-right-radius:6px}
-.pane.to{border-top-left-radius:6px;border-top-right-radius:6px;margin-top:4px}
-.chip{position:relative;display:inline-flex;align-items:center;gap:8px;
-  background:var(--field);border-radius:999px;padding:7px 14px 7px 12px;font-weight:500;font-size:15px}
-.chip select{position:absolute;inset:0;opacity:0;width:100%;font-size:16px;cursor:pointer}
-.chip .code{font-weight:700;letter-spacing:.02em}
-.chip .name{color:var(--muted)}
-.chip svg{width:12px;height:12px;color:var(--muted)}
-.chip:focus-within{outline:2px solid var(--from);outline-offset:2px}
+html{height:100%;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+main{max-width:480px;margin:0 auto;padding:0 18px 40px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;display:flex;gap:6px}
+nav a{flex:1;text-align:center;padding:9px 4px;border-radius:12px;color:var(--muted);text-decoration:none;font-weight:600;font-size:15px;background:var(--field)}
+nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+nav a:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+section[hidden]{display:none}
+h1{font-size:26px;line-height:1.15;margin:8px 4px 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 4px 16px;font-size:15px}
+h2{font-size:17px;margin:24px 4px 8px}
+.card{background:var(--surface);border-radius:18px;padding:16px}
+.link{background:none;border:0;color:var(--from);font:inherit;font-weight:600;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 16px;background:var(--ink);color:var(--bg);cursor:pointer}
+.link:focus-visible,.btn:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+.foot{margin:14px 4px 0;font-size:13px;color:var(--muted)}
+
+/* converter */
+.cur{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.cur .lbl{font-weight:700;font-size:15px}
+.cur .lbl span{color:var(--muted);font-weight:500}
 .amount{display:block;width:100%;border:0;background:none;color:var(--from);
-  font:700 clamp(40px,13vw,60px)/1.1 "Onest",system-ui,sans-serif;font-variant-numeric:tabular-nums;
-  padding:10px 0 0;margin:0;letter-spacing:-.02em;caret-color:var(--from);min-width:0}
+  font:700 clamp(42px,14vw,62px)/1.1 system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;
+  padding:6px 0 0;margin:0;letter-spacing:-.02em;min-width:0}
 .amount:focus{outline:none}
+.pfrom{border-bottom-left-radius:6px;border-bottom-right-radius:6px}
+.pto{border-top-left-radius:6px;border-top-right-radius:6px;margin-top:4px}
 .result{color:var(--to);overflow-wrap:anywhere}
-.swap{position:absolute;right:18px;bottom:-25px;z-index:2;width:46px;height:46px;border-radius:50%;
-  border:4px solid var(--bg);background:var(--ink);color:var(--bg);display:grid;place-items:center;cursor:pointer;padding:0;
-  transition:transform .25s ease}
-.swap svg{width:18px;height:18px}
-.swap:focus-visible{outline:2px solid var(--from);outline-offset:2px}
-.swap.spin{transform:rotate(180deg)}
-.rate{margin:14px 4px 0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:15px}
-.rate b{font-weight:500}
-.link{background:none;border:0;color:var(--from);font:inherit;font-weight:500;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.link:focus-visible{outline:2px solid var(--from);outline-offset:2px;border-radius:4px}
-.edit{display:none;margin:10px 0 0;background:var(--surface);border-radius:16px;padding:14px}
-.edit.open{display:block}
-.edit label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
-.edit input{width:9em;font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.quick button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.quick button:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+.rate{margin:14px 4px 0;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.edit{display:none;margin-top:8px}.edit.open{display:block}
+.edit label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.edit input{width:8em;font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .edit .row{display:flex;gap:16px;margin-top:10px}
-.btn{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 16px;background:var(--ink);color:var(--bg);cursor:pointer}
-.btn:focus-visible{outline:2px solid var(--from);outline-offset:2px}
-.also{margin-top:26px}
-.also h2{font-size:15px;font-weight:500;color:var(--muted);margin:0 4px 6px}
-.also ul{list-style:none;margin:0;padding:0}
-.also li{display:flex;justify-content:space-between;align-items:baseline;padding:11px 4px;border-top:1px solid var(--line);font-size:17px}
-.also li button{all:unset;cursor:pointer;display:flex;justify-content:space-between;width:100%;gap:12px}
-.also li button:focus-visible{outline:2px solid var(--from);outline-offset:2px;border-radius:4px}
-.also .c{color:var(--muted)}
-.foot{margin:22px 4px 0;font-size:13px;line-height:1.5;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){.swap{transition:none}}
+.table{margin-top:20px}
+.table li{display:flex;justify-content:space-between;padding:9px 4px;border-top:1px solid var(--line)}
+ul{list-style:none;margin:0;padding:0}
+
+/* weather */
+.now{display:flex;align-items:center;gap:14px}
+.now .ic{font-size:46px;line-height:1}
+.now .t{font-size:40px;font-weight:700;letter-spacing:-.02em}
+.now .d{color:var(--muted);font-size:14px}
+.days{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:14px}
+.day{background:var(--field);border-radius:12px;padding:8px 2px;text-align:center;font-size:13px}
+.day.on{background:var(--today);box-shadow:inset 0 0 0 2px var(--todayline)}
+.day .ic{font-size:22px;line-height:1.3}
+.day b{display:block;font-size:14px}
+.day .p{color:var(--muted)}
+
+/* itinerary */
+.it{display:flex;flex-direction:column;gap:10px}
+.it article{background:var(--surface);border-radius:18px;padding:14px 16px;border-left:5px solid transparent}
+.it article.on{background:var(--today);border-left-color:var(--todayline)}
+.it header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.it h3{margin:0;font-size:17px}
+.it .date{color:var(--muted);font-size:14px;white-space:nowrap}
+.it .wx{font-size:14px;color:var(--muted);margin-top:2px}
+.it ul{margin-top:8px}
+.it li{padding:4px 0 4px 16px;position:relative}
+.it li::before{content:"";position:absolute;left:2px;top:.75em;width:6px;height:6px;border-radius:50%;background:var(--from)}
+.it .time{font-weight:700}
+.badge{display:inline-block;font-size:12px;font-weight:700;background:var(--todayline);color:#1d1600;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
+
+/* flights */
+.fl{margin-bottom:12px}
+.fl .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fl .no{font-size:22px;font-weight:700}
+.fl .tm{font-size:22px;font-weight:700;color:var(--from)}
+.fl .rt{color:var(--muted);font-size:14px;margin-top:2px}
+.fl ol{margin:10px 0 0;padding-left:24px;columns:2;column-gap:18px;font-size:15px}
+.fl ol li{break-inside:avoid;padding:1px 0}
+.fl .me{font-weight:700}
+.search{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin:4px 0 14px}
+.find{margin:-6px 4px 14px;font-size:15px}
+@media (max-width:360px){.fl ol{columns:1}.days{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
 <main>
-  <section class="pane from" aria-label="Convert from">
-    <label class="chip"><span class="code" id="fromCode"></span><span class="name" id="fromName"></span>
-      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-      <select id="fromSel" aria-label="From currency"></select></label>
-    <input id="amt" class="amount" inputmode="decimal" autocomplete="off" aria-label="Amount" value="100">
-    <button class="swap" id="swap" aria-label="Swap currencies">
-      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M5 2v13M5 15l-3-3M5 15l3-3M13 16V3M13 3l-3 3M13 3l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-  </section>
-  <section class="pane to" aria-label="Convert to">
-    <label class="chip"><span class="code" id="toCode"></span><span class="name" id="toName"></span>
-      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-      <select id="toSel" aria-label="To currency"></select></label>
-    <div id="out" class="amount result" aria-live="polite"></div>
-  </section>
+<nav aria-label="Bahagian">
+  <a href="#jadual" data-v="jadual">Jadual</a>
+  <a href="#tukar" data-v="tukar">RMB ➜ RM</a>
+  <a href="#flight" data-v="flight">Flight</a>
+</nav>
 
-  <div class="rate"><span id="rateTxt"></span><button class="link" id="editBtn" aria-expanded="false">Edit rate</button></div>
-  <div class="edit" id="edit">
-    <label>1 <span id="eCode"></span> = <input id="eVal" inputmode="decimal"> MYR</label>
-    <div class="row"><button class="btn" id="eSave">Save rate</button><button class="link" id="eReset">Use bank rate</button></div>
+<!-- JADUAL -->
+<section id="v-jadual">
+  <h1>Guangzhou</h1>
+  <p class="sub">27 Nov – 2 Dis 2026</p>
+  <div class="card" id="wx">
+    <div class="now"><div class="ic" id="wxIc">⛅</div><div><div class="t" id="wxT">–</div><div class="d" id="wxD">Memuatkan cuaca…</div></div></div>
+    <div class="days" id="wxDays"></div>
   </div>
+  <p class="foot" id="wxFoot"></p>
+  <h2>Jadual harian</h2>
+  <div class="it" id="it"></div>
+</section>
 
-  <section class="also"><h2 id="alsoH"></h2><ul id="also"></ul></section>
+<!-- TUKAR -->
+<section id="v-tukar" hidden>
+  <div class="card pfrom">
+    <div class="cur"><span class="lbl">CNY <span>Yuan / RMB</span></span><span class="lbl">¥</span></div>
+    <input id="amt" class="amount" inputmode="decimal" autocomplete="off" aria-label="Jumlah dalam yuan" value="100">
+  </div>
+  <div class="card pto">
+    <div class="cur"><span class="lbl">MYR <span>Ringgit</span></span><span class="lbl">RM</span></div>
+    <div id="out" class="amount result" aria-live="polite"></div>
+  </div>
+  <div class="quick" id="quick"></div>
+  <div class="rate"><span id="rateTxt"></span><button class="link" id="editBtn" aria-expanded="false">Ubah kadar</button></div>
+  <div class="edit card" id="edit">
+    <label>¥1 = RM <input id="eVal" inputmode="decimal"></label>
+    <div class="row"><button class="btn" id="eSave">Simpan kadar</button><button class="link" id="eReset">Guna kadar pasaran</button></div>
+  </div>
+  <ul class="table" id="tbl"></ul>
+  <p class="foot"><span id="rFoot"></span> <button class="link" id="refresh">Kemas kini kadar</button></p>
+</section>
 
-  <p class="foot"><span id="foot"></span> <button class="link" id="refresh">Refresh rates</button></p>
+<!-- FLIGHT -->
+<section id="v-flight" hidden>
+  <h1>Penerbangan</h1>
+  <p class="sub">China Southern (CZ). Zulfa Juniadi (L) ketua kumpulan.</p>
+  <input class="search" id="q" type="search" placeholder="Cari nama…" aria-label="Cari nama">
+  <p class="find" id="find" aria-live="polite"></p>
+  <div id="fl"></div>
+</section>
 </main>
+
 <script>
 (function(){
-  // Bank Negara Malaysia middle rates, MYR per 1 unit, trading date 23 Oct 2026
-  var BANK_DATE="23 Oct 2026";
-  var BANK={MYR:1,USD:4.084,SGD:3.1947,EUR:4.57,GBP:5.4628,AUD:2.8643,JPY:0.026044,CNY:0.6122,THB:0.120989,
-    IDR:0.000226,HKD:0.520795,SAR:1.088138,AED:1.111988,INR:0.043005,KRW:0.00308,NZD:2.3213,CHF:4.9617,
-    CAD:2.9136,PHP:0.064196,TWD:0.125365,BND:3.1947,VND:0.000158};
-  var NAMES={MYR:"Ringgit",USD:"US dollar",SGD:"Singapore dollar",EUR:"Euro",GBP:"Pound",AUD:"Australian dollar",
-    JPY:"Yen",CNY:"Renminbi",THB:"Baht",IDR:"Rupiah",HKD:"HK dollar",SAR:"Saudi riyal",AED:"Dirham",INR:"Rupee",
-    KRW:"Won",NZD:"NZ dollar",CHF:"Swiss franc",CAD:"Canadian dollar",PHP:"Peso",TWD:"NT dollar",BND:"Brunei dollar",VND:"Dong"};
-  var ALSO=["MYR","USD","SGD","EUR","GBP","AUD","JPY","THB","IDR"];
-  var codes=Object.keys(BANK);
-
+  var $=function(id){return document.getElementById(id)};
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 
-  var custom=load("tukar.custom",{});
-  var st=load("tukar.state",{from:"USD",to:"MYR",amt:"100"});
-  if(!BANK[st.from])st.from="USD"; if(!BANK[st.to])st.to="MYR";
-
-  var $=function(id){return document.getElementById(id)};
-  var amt=$("amt"),fromSel=$("fromSel"),toSel=$("toSel");
-  codes.forEach(function(c){
-    [fromSel,toSel].forEach(function(s){var o=document.createElement("option");o.value=c;o.textContent=c+" – "+NAMES[c];s.appendChild(o)});
-  });
-  amt.value=st.amt;
-
-  var live=load("tukar.live",null); // {rates:{code:MYR per unit}, at:ms, src:""}
-  function rate(c){return custom[c]||(live&&live.rates[c])||BANK[c]}
-
-  function fetchJSON(u){
-    var ctl=new AbortController(),t=setTimeout(function(){ctl.abort()},8000);
-    return fetch(u,{signal:ctl.signal,cache:"no-store"}).then(function(r){clearTimeout(t);if(!r.ok)throw new Error(r.status);return r.json()});
+  /* ---------- views ---------- */
+  var VIEWS=["jadual","tukar","flight"];
+  function show(){
+    var v=location.hash.slice(1); if(VIEWS.indexOf(v)<0)v=load("gz.view","jadual");
+    VIEWS.forEach(function(x){$("v-"+x).hidden=x!==v});
+    document.querySelectorAll("nav a").forEach(function(a){a.toggleAttribute("aria-current",a.dataset.v===v);if(a.dataset.v===v)a.setAttribute("aria-current","page")});
+    save("gz.view",v); window.scrollTo(0,0);
   }
-  function invert(per){var o={MYR:1};codes.forEach(function(c){if(per[c]>0)o[c]=1/per[c]});return o}
-  var busy=false;
-  function refresh(manual){
-    if(busy)return; if(!navigator.onLine){if(manual)status("You’re offline. Using saved rates.");return}
-    busy=true;$("refresh").textContent="Refreshing…";
-    fetchJSON("https://open.er-api.com/v6/latest/MYR").then(function(j){
-      if(j.result!=="success")throw new Error("bad");return {rates:invert(j.rates),src:"ExchangeRate-API"};
-    }).catch(function(){
-      return fetchJSON("https://api.frankfurter.app/latest?from=MYR").then(function(j){return {rates:invert(j.rates),src:"Frankfurter (ECB)"}});
-    }).then(function(r){
-      live={rates:r.rates,at:Date.now(),src:r.src};save("tukar.live",live);render();
-    }).catch(function(){if(manual)status("Couldn’t reach the rate service. Using saved rates.")})
-    .finally(function(){busy=false;$("refresh").textContent="Refresh rates"});
-  }
-  var msg="";function status(m){msg=m;render();setTimeout(function(){msg="";render()},4000)}
-  function parse(s){var n=parseFloat(String(s).replace(/,/g,""));return isFinite(n)?n:0}
-  function fmt(n,c){
-    var a=Math.abs(n),d=a>=1000?2:a>=1?2:a>=0.01?4:6;
-    if(c==="IDR"||c==="VND"||c==="KRW"||c==="JPY")d=a>=100?0:2;
-    return n.toLocaleString("en-MY",{minimumFractionDigits:Math.min(d,2),maximumFractionDigits:d});
-  }
-  function conv(v,f,t){return v*rate(f)/rate(t)}
+  window.addEventListener("hashchange",show);
 
-  function render(){
-    var f=st.from,t=st.to,v=parse(amt.value);
-    fromSel.value=f;toSel.value=t;
-    $("fromCode").textContent=f;$("fromName").textContent=NAMES[f];
-    $("toCode").textContent=t;$("toName").textContent=NAMES[t];
-    $("out").textContent=fmt(conv(v,f,t),t);
-    $("rateTxt").textContent="1 "+f+" = "+fmt(conv(1,f,t),t)+" "+t;
-    var eCur=f==="MYR"?t:f;
-    $("eCode").textContent=eCur;
-    $("editBtn").hidden=(f==="MYR"&&t==="MYR");
-    if(!$("edit").classList.contains("open"))$("eVal").value=rate(eCur);
-    $("alsoH").textContent=fmt(v,f)+" "+f+" is also";
-    var ul=$("also");ul.textContent="";
-    ALSO.filter(function(c){return c!==f&&c!==t}).slice(0,6).forEach(function(c){
-      var li=document.createElement("li"),b=document.createElement("button"),
-          s1=document.createElement("span"),s2=document.createElement("span");
-      s1.textContent=fmt(conv(v,f,c),c);s2.className="c";s2.textContent=c;
-      b.appendChild(s1);b.appendChild(s2);b.setAttribute("aria-label","Convert to "+c);
-      b.onclick=function(){st.to=c;persist();render()};
-      li.appendChild(b);ul.appendChild(li);
+  /* ---------- trip data ---------- */
+  var DAYS=[
+    {d:"2026-11-27",t:"KL ➜ Guangzhou",items:[["1pm","Berkumpul di KLIA"],[null,"Tiba di Lapangan Terbang Baiyun Guangzhou. Meet and greet."],[null,"Check in hotel."]]},
+    {d:"2026-11-28",t:"Chimelong Paradise",items:[["7am","Driver pickup ke Guangzhou Chimelong Paradise theme park sehingga petang."],[null,"Kembali ke bandar Guangzhou. Makan malam dan balik hotel."]]},
+    {d:"2026-11-29",t:"Shamian & Yongqingfang",items:[["10am","Driver pickup ke Shamian Island: suasana pulau dengan bangunan kolonial Eropah dan kafe unik seperti Harry Potter Starbucks."],[null,"Yongqingfang Cultural Street: lorong warisan dengan Rumah Bruce Lee, Moon Bridge dan Muzium Opera Kantonis."],[null,"Makan malam dan Guangzhou Night River Cruise. Balik hotel."]]},
+    {d:"2026-11-30",t:"Baima & Beijing Road",items:[["9.30am","Driver pickup ke Baima Clothing Wholesale Market dan Famous Bag Market."],[null,"Makan malam dan Beijing Road Night Market. Balik hotel."]]},
+    {d:"2026-12-01",t:"Makam Abi Waqas & Onelink",items:[[null,"Ziarah Makam Abi Waqas (bapa saudara Nabi)."],[null,"Onelink Plaza, pasar cenderamata dan shopping ikut permintaan."],[null,"Balik hotel."]]},
+    {d:"2026-12-02",t:"Guangzhou ➜ KL",items:[[null,"Free & easy. Checkout."],[null,"Driver pickup ke airport. Terbang pulang ke Kuala Lumpur. Home sweet home."]]}
+  ];
+  var FLIGHTS=[
+    {no:"CZ8348",time:"17:15",date:"27 Nov 2026",route:"KL ➜ Guangzhou",pax:["Affandi","Nur Mas Ayu","Farisah Athira","Saratul Hajar Azizah","Noor Hanin","Siti Alyssa Natasya","Puteri Nur Aireen Syakirah","Mohd Zahin Akashah","Firzaiman","Muhammad Nazhan","Mohamad Amirul","Radin Mohd NorHilmi","Mohamad Saiful"]},
+    {no:"CZ8302",time:"18:20",date:"27 Nov 2026",route:"KL ➜ Guangzhou",pax:["Nur Syafiqah","Wan Norsalihah","Nurul Nur Razleen","Mohd Firdaus","Zulfa Juniadi (L)","Mohd Zharif"]},
+    {no:"CZ3047",time:"10:25",date:"2 Dis 2026",route:"Guangzhou ➜ KL",pax:["Affandi","Nur Mas Ayu","Farisah Athira","Saratul Hajar Azizah","Noor Hanin","Siti Alyssa Natasya","Puteri Nur Aireen Syakirah","Nur Syafiqah","Wan Norsalihah","Nurul Nur Razleen"]},
+    {no:"CZ8011",time:"11:25",date:"2 Dis 2026",route:"Guangzhou ➜ KL",pax:["Mohd Firdaus","Zulfa Juniadi (L)","Mohd Zharif","Mohd Zahin Akashah","Firzaiman","Muhammad Nazhan","Mohamad Amirul","Radin Mohd NorHilmi","Mohamad Saiful"]}
+  ];
+  var HARI=["Ahd","Isn","Sel","Rab","Kha","Jum","Sab"],BLN=["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
+  function pd(s){var p=s.split("-");return new Date(+p[0],p[1]-1,+p[2])}
+  function dlabel(s){var d=pd(s);return HARI[d.getDay()]+", "+d.getDate()+" "+BLN[d.getMonth()]}
+  function todayGZ(){try{return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Shanghai"}).format(new Date())}catch(e){return new Date().toISOString().slice(0,10)}}
+
+  /* ---------- weather ---------- */
+  var WMO={0:["☀️","Cerah"],1:["🌤️","Kebanyakan cerah"],2:["⛅","Separa mendung"],3:["☁️","Mendung"],45:["🌫️","Berkabus"],48:["🌫️","Berkabus"],
+    51:["🌦️","Gerimis"],53:["🌦️","Gerimis"],55:["🌦️","Gerimis lebat"],61:["🌧️","Hujan renyai"],63:["🌧️","Hujan"],65:["🌧️","Hujan lebat"],
+    80:["🌦️","Hujan sekejap"],81:["🌧️","Hujan sekejap"],82:["⛈️","Hujan lebat"],95:["⛈️","Ribut petir"],96:["⛈️","Ribut petir"],99:["⛈️","Ribut petir"]};
+  function w(c){return WMO[c]||["🌡️","–"]}
+  var wx=load("gz.wx",null);
+  function renderWx(){
+    var today=todayGZ(),box=$("wxDays");box.textContent="";
+    if(wx&&wx.current){
+      var c=w(wx.current.weather_code);
+      $("wxIc").textContent=c[0];$("wxT").textContent=Math.round(wx.current.temperature_2m)+"°C";
+      $("wxD").textContent=c[1]+". Terasa "+Math.round(wx.current.apparent_temperature)+"°C, lembapan "+wx.current.relative_humidity_2m+"%";
+    }
+    DAYS.forEach(function(day,i){
+      var k=wx&&wx.daily?wx.daily.time.indexOf(day.d):-1,b=el("div","day"+(day.d===today?" on":""));
+      b.appendChild(el("div",null,HARI[pd(day.d).getDay()]));
+      if(k>=0){
+        b.appendChild(el("div","ic",w(wx.daily.weather_code[k])[0]));
+        b.appendChild(el("b",null,Math.round(wx.daily.temperature_2m_max[k])+"°"));
+        b.appendChild(el("div","p",Math.round(wx.daily.temperature_2m_min[k])+"°"));
+      }else{b.appendChild(el("div","ic","·"));b.appendChild(el("b",null,"–"))}
+      box.appendChild(b);
     });
-    var n=Object.keys(custom).length;
-    var src=live?("Mid-market rates from "+live.src+", updated "+new Date(live.at).toLocaleString("en-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})):
-      ("Bank Negara Malaysia middle rates from "+BANK_DATE);
-    if(!navigator.onLine)src="Offline. "+src;
-    $("foot").textContent=msg||(src+(n?". Your own rate is in use for "+Object.keys(custom).join(", ")+".":". Banks and cards charge a bit more."));
-    try{document.title=f+" → "+t}catch(e){}
+    $("wxFoot").textContent=wx?("Cuaca Guangzhou dari Open-Meteo, dikemas kini "+new Date(wx.at).toLocaleString("ms-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+(navigator.onLine?"":". Offline.")):
+      (navigator.onLine?"Memuatkan ramalan cuaca…":"Offline. Ramalan cuaca akan dimuatkan bila ada internet.");
+    renderIt();
   }
-  function persist(){st.amt=amt.value;save("tukar.state",st)}
+  function getWx(){
+    if(!navigator.onLine)return;
+    var u="https://api.open-meteo.com/v1/forecast?latitude=23.13&longitude=113.26&timezone=Asia%2FShanghai"+
+      "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code"+
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=16";
+    fetchJSON(u).then(function(j){j.at=Date.now();wx=j;save("gz.wx",j);renderWx()}).catch(function(){});
+  }
 
-  amt.addEventListener("input",function(){persist();render()});
+  function renderIt(){
+    var today=todayGZ(),box=$("it");box.textContent="";
+    DAYS.forEach(function(day,i){
+      var a=el("article",day.d===today?"on":""),h=el("header"),t=el("h3",null,"Hari "+(i+1)+": "+day.t);
+      if(day.d===today)t.appendChild(el("span","badge","Hari ini"));
+      h.appendChild(t);h.appendChild(el("span","date",dlabel(day.d)));a.appendChild(h);
+      var k=wx&&wx.daily?wx.daily.time.indexOf(day.d):-1;
+      if(k>=0){var c=w(wx.daily.weather_code[k]),p=wx.daily.precipitation_probability_max[k];
+        a.appendChild(el("div","wx",c[0]+" "+c[1]+", "+Math.round(wx.daily.temperature_2m_min[k])+"–"+Math.round(wx.daily.temperature_2m_max[k])+"°C"+(p!=null?", hujan "+p+"%":"")))}
+      var ul=el("ul");
+      day.items.forEach(function(it){var li=el("li");if(it[0]){li.appendChild(el("span","time",it[0]+" "))}li.appendChild(document.createTextNode(it[1]));ul.appendChild(li)});
+      a.appendChild(ul);box.appendChild(a);
+    });
+  }
+
+  /* ---------- converter ---------- */
+  var FALLBACK=0.6122, FALLBACK_SRC="Bank Negara Malaysia, 23 Okt 2026";
+  var live=load("gz.rate",null), custom=load("gz.custom",null), amt=$("amt");
+  amt.value=load("gz.amt","100");
+  function rate(){return custom||(live&&live.r)||FALLBACK}
+  function parse(s){var n=parseFloat(String(s).replace(/,/g,""));return isFinite(n)?n:0}
+  function rm(n){return n.toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function renderCv(msg){
+    var v=parse(amt.value),r=rate();
+    $("out").textContent=rm(v*r);
+    $("rateTxt").textContent="¥1 = RM"+r.toFixed(4);
+    if(!$("edit").classList.contains("open"))$("eVal").value=r.toFixed(4);
+    var tb=$("tbl");tb.textContent="";
+    [1,5,10,20,50,100,200,500,1000].forEach(function(y){var li=el("li");li.appendChild(el("span",null,"¥"+y.toLocaleString("en")));li.appendChild(el("b",null,"RM"+rm(y*r)));tb.appendChild(li)});
+    var src=custom?"Kadar anda sendiri":live?("Kadar pasaran dari "+live.src+", "+new Date(live.at).toLocaleString("ms-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})):("Kadar "+FALLBACK_SRC);
+    $("rFoot").textContent=msg||(src+(navigator.onLine?".":". Offline."));
+  }
+  [10,50,100,500].forEach(function(y){var b=el("button",null,"¥"+y);b.onclick=function(){amt.value=y;save("gz.amt",amt.value);renderCv()};$("quick").appendChild(b)});
+  amt.addEventListener("input",function(){save("gz.amt",amt.value);renderCv()});
   amt.addEventListener("focus",function(){amt.select()});
-  fromSel.addEventListener("change",function(){st.from=fromSel.value;persist();render()});
-  toSel.addEventListener("change",function(){st.to=toSel.value;persist();render()});
-  $("swap").addEventListener("click",function(){
-    var r=conv(parse(amt.value),st.from,st.to);
-    var x=st.from;st.from=st.to;st.to=x;
-    amt.value=String(+r.toFixed(2));this.classList.toggle("spin");persist();render();
-  });
-  $("editBtn").addEventListener("click",function(){
-    var e=$("edit"),o=e.classList.toggle("open");this.setAttribute("aria-expanded",o);
-    this.textContent=o?"Close":"Edit rate";
-    if(o){$("eVal").value=rate($("eCode").textContent);$("eVal").focus()}
-  });
-  $("eSave").addEventListener("click",function(){
-    var c=$("eCode").textContent,v=parse($("eVal").value);
-    if(v>0&&c!=="MYR"){custom[c]=v;save("tukar.custom",custom)}
-    $("edit").classList.remove("open");$("editBtn").textContent="Edit rate";$("editBtn").setAttribute("aria-expanded","false");render();
-  });
-  $("eReset").addEventListener("click",function(){
-    var c=$("eCode").textContent;delete custom[c];save("tukar.custom",custom);
-    $("eVal").value=rate(c);render();
-  });
-  $("refresh").addEventListener("click",function(){refresh(true)});
-  window.addEventListener("online",function(){render();refresh(false)});
-  window.addEventListener("offline",render);
-  document.addEventListener("visibilitychange",function(){
-    if(!document.hidden&&(!live||Date.now()-live.at>3*3600e3))refresh(false)});
-  render();
-  if(!live||Date.now()-live.at>3*3600e3)refresh(false);
+  $("editBtn").addEventListener("click",function(){var o=$("edit").classList.toggle("open");this.setAttribute("aria-expanded",o);this.textContent=o?"Tutup":"Ubah kadar";if(o)$("eVal").focus()});
+  $("eSave").addEventListener("click",function(){var v=parse($("eVal").value);if(v>0){custom=v;save("gz.custom",v)}$("edit").classList.remove("open");$("editBtn").textContent="Ubah kadar";renderCv()});
+  $("eReset").addEventListener("click",function(){custom=null;try{localStorage.removeItem("gz.custom")}catch(e){}$("eVal").value=rate().toFixed(4);renderCv()});
+
+  function fetchJSON(u){var c=new AbortController(),t=setTimeout(function(){c.abort()},9000);
+    return fetch(u,{signal:c.signal,cache:"no-store"}).then(function(r){clearTimeout(t);if(!r.ok)throw 0;return r.json()})}
+  var busy=false;
+  function getRate(manual){
+    if(busy)return; if(!navigator.onLine){if(manual)renderCv("Offline. Guna kadar yang disimpan.");return}
+    busy=true;$("refresh").textContent="Mengemas kini…";
+    fetchJSON("https://open.er-api.com/v6/latest/CNY").then(function(j){if(!(j.rates&&j.rates.MYR))throw 0;return{r:j.rates.MYR,src:"ExchangeRate-API"}})
+    .catch(function(){return fetchJSON("https://api.frankfurter.app/latest?from=CNY&to=MYR").then(function(j){return{r:j.rates.MYR,src:"Frankfurter (ECB)"}})})
+    .then(function(x){live={r:x.r,src:x.src,at:Date.now()};save("gz.rate",live);renderCv()})
+    .catch(function(){if(manual)renderCv("Tak dapat capai servis kadar. Guna kadar yang disimpan.")})
+    .finally(function(){busy=false;$("refresh").textContent="Kemas kini kadar"});
+  }
+  $("refresh").addEventListener("click",function(){getRate(true)});
+
+  /* ---------- flights ---------- */
+  function renderFl(){
+    var q=$("q").value.trim().toLowerCase(),box=$("fl"),hits=[];box.textContent="";
+    FLIGHTS.forEach(function(f){
+      var c=el("div","card fl"),top=el("div","top");
+      top.appendChild(el("span","no",f.no));top.appendChild(el("span","tm",f.time));c.appendChild(top);
+      c.appendChild(el("div","rt",f.route+", "+f.date+" ("+f.pax.length+" orang)"));
+      var ol=el("ol");f.pax.forEach(function(p){var li=el("li",q&&p.toLowerCase().indexOf(q)>=0?"me":null,p);ol.appendChild(li);if(q&&p.toLowerCase().indexOf(q)>=0)hits.push(p+": "+f.no+" "+f.time+" ("+f.route+")")});
+      c.appendChild(ol);box.appendChild(c);
+    });
+    $("find").textContent=q?(hits.length?hits.join(" | "):"Tiada nama sepadan."):"";
+  }
+  $("q").addEventListener("input",renderFl);
+
+  /* ---------- boot ---------- */
+  function stale(x,h){return !x||Date.now()-x.at>h*3600e3}
+  window.addEventListener("online",function(){renderWx();renderCv();getWx();getRate(false)});
+  window.addEventListener("offline",function(){renderWx();renderCv()});
+  document.addEventListener("visibilitychange",function(){if(!document.hidden){renderWx();if(stale(wx,1))getWx();if(stale(live,3))getRate(false)}});
+  show();renderWx();renderCv();renderFl();
+  if(stale(wx,1))getWx(); if(stale(live,3))getRate(false);
   if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
 })();
 </script>
