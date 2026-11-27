@@ -32,7 +32,7 @@ body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 main{max-width:480px;margin:0 auto;padding:0 18px 40px}
 nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;display:flex;gap:6px}
-nav a{flex:1;text-align:center;padding:9px 4px;border-radius:12px;color:var(--muted);text-decoration:none;font-weight:600;font-size:15px;background:var(--field)}
+nav a{flex:1;text-align:center;padding:9px 2px;white-space:nowrap;border-radius:12px;color:var(--muted);text-decoration:none;font-weight:600;font-size:15px;background:var(--field)}
 nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
 nav a:focus-visible{outline:2px solid var(--from);outline-offset:2px}
 section[hidden]{display:none}
@@ -105,6 +105,35 @@ ul{list-style:none;margin:0;padding:0}
 .fl .me{font-weight:700}
 .search{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin:4px 0 14px}
 .find{margin:-6px 4px 14px;font-size:15px}
+/* translate */
+.dir{display:flex;align-items:center;gap:10px;margin:8px 4px 10px;font-weight:600}
+.dir .sw{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.dir .sw:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+textarea{width:100%;min-height:96px;font:inherit;font-size:17px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
+textarea:focus{outline:2px solid var(--from);outline-offset:1px}
+.go{width:100%;margin-top:10px;padding:13px;font-size:17px}
+.go:disabled{opacity:.55}
+.tr{margin-top:14px}
+.tr .zh{font-size:30px;line-height:1.35;font-weight:600;overflow-wrap:anywhere;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.tr .py{color:var(--muted);margin-top:4px}
+.tr .ms{font-size:21px;line-height:1.4}
+.tr .src{color:var(--muted);font-size:14px;margin-top:8px}
+.acts{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap}
+.err{color:#B3261E;margin:10px 4px 0}
+@media (prefers-color-scheme:dark){.err{color:#F2B8B5}}
+.hist li button{all:unset;display:block;width:100%;cursor:pointer;padding:10px 4px;border-top:1px solid var(--line)}
+.hist li button:focus-visible{outline:2px solid var(--from);outline-offset:2px;border-radius:4px}
+.hist .a{display:block;color:var(--muted);font-size:14px}
+.hist .b{display:block;font-size:18px}
+.big{position:fixed;inset:0;z-index:20;background:var(--surface);display:none;flex-direction:column;justify-content:center;align-items:center;
+  padding:calc(env(safe-area-inset-top,0px) + 24px) 24px calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;cursor:pointer}
+.big.open{display:flex}
+.big .zh{font-size:clamp(40px,12vw,84px);line-height:1.3;font-weight:700;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;overflow-wrap:anywhere}
+.big .py{color:var(--muted);font-size:20px;margin-top:12px}
+.big .hint{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);color:var(--muted);font-size:14px}
+.key input{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:6px 0 10px}
+details.key summary{cursor:pointer;color:var(--muted);font-size:14px;margin:20px 4px 0}
+details.key .card{margin-top:8px;font-size:14px}
 @media (max-width:360px){.fl ol{columns:1}.days{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
@@ -112,6 +141,7 @@ ul{list-style:none;margin:0;padding:0}
 <main>
 <nav aria-label="Bahagian">
   <a href="#jadual" data-v="jadual">Jadual</a>
+  <a href="#terjemah" data-v="terjemah">Terjemah</a>
   <a href="#tukar" data-v="tukar">RMB ➜ RM</a>
   <a href="#flight" data-v="flight">Flight</a>
 </nav>
@@ -128,6 +158,28 @@ ul{list-style:none;margin:0;padding:0}
   <h2>Jadual harian</h2>
   <div class="it" id="it"></div>
 </section>
+
+<!-- TERJEMAH -->
+<section id="v-terjemah" hidden>
+  <div class="dir"><span id="dirTxt">Melayu ➜ 中文</span><button class="sw" id="dirSw" aria-label="Tukar arah terjemahan">⇄ Tukar arah</button></div>
+  <textarea id="src" placeholder="Taip ayat dalam Bahasa Melayu…" aria-label="Teks untuk diterjemah"></textarea>
+  <button class="btn go" id="go">Terjemah</button>
+  <p class="err" id="err" hidden></p>
+  <div class="card tr" id="tr" hidden></div>
+  <h2 id="histH" hidden>Terjemahan tersimpan</h2>
+  <p class="foot" id="histNote" hidden>Ini disimpan dalam telefon dan boleh dibuka tanpa internet.</p>
+  <ul class="hist" id="hist"></ul>
+  <details class="key" id="keyBox">
+    <summary>Kunci API DeepSeek</summary>
+    <div class="card">
+      <label for="key">Kunci disimpan dalam telefon ini sahaja, tidak dalam repo.</label>
+      <input id="key" type="password" autocomplete="off" placeholder="sk-…">
+      <button class="btn" id="keySave">Simpan kunci</button> <button class="link" id="keyDel">Padam</button>
+      <p class="foot" id="keyMsg"></p>
+    </div>
+  </details>
+</section>
+<div class="big" id="big" role="dialog" aria-label="Paparan besar"><div class="zh" id="bigZh"></div><div class="py" id="bigPy"></div><div class="hint">Ketik untuk tutup</div></div>
 
 <!-- TUKAR -->
 <section id="v-tukar" hidden>
@@ -167,7 +219,7 @@ ul{list-style:none;margin:0;padding:0}
   function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 
   /* ---------- views ---------- */
-  var VIEWS=["jadual","tukar","flight"];
+  var VIEWS=["jadual","terjemah","tukar","flight"];
   function show(){
     var v=location.hash.slice(1); if(VIEWS.indexOf(v)<0)v=load("gz.view","jadual");
     VIEWS.forEach(function(x){$("v-"+x).hidden=x!==v});
@@ -297,6 +349,75 @@ ul{list-style:none;margin:0;padding:0}
     $("find").textContent=q?(hits.length?hits.join(" | "):"Tiada nama sepadan."):"";
   }
   $("q").addEventListener("input",renderFl);
+
+  /* ---------- translate ---------- */
+  var dir=load("gz.dir","ms2zh"),hist=load("gz.hist",[]),cur=null,inflight=null;
+  function hasKey(){return !!load("gz.dskey","")}
+  function setDir(){
+    $("dirTxt").textContent=dir==="ms2zh"?"Melayu ➜ 中文":"中文 ➜ Melayu";
+    $("src").placeholder=dir==="ms2zh"?"Taip ayat dalam Bahasa Melayu…":"Tampal atau taip teks Cina…";
+  }
+  $("dirSw").onclick=function(){dir=dir==="ms2zh"?"zh2ms":"ms2zh";save("gz.dir",dir);setDir()};
+  function err(m){$("err").hidden=!m;$("err").textContent=m||""}
+  function showTr(x){
+    cur=x;var b=$("tr");b.hidden=false;b.textContent="";
+    if(x.dir==="ms2zh"){b.appendChild(el("div","zh",x.zh));if(x.py)b.appendChild(el("div","py",x.py))}
+    else b.appendChild(el("div","ms",x.ms));
+    b.appendChild(el("div","src",x.src));
+    var a=el("div","acts");
+    if(x.dir==="ms2zh"){
+      var big=el("button","link","Tunjuk besar");big.onclick=function(){$("bigZh").textContent=x.zh;$("bigPy").textContent=x.py||"";$("big").classList.add("open")};a.appendChild(big);
+      if("speechSynthesis" in window){var sp=el("button","link","Dengar");sp.onclick=function(){var u=new SpeechSynthesisUtterance(x.zh);u.lang="zh-CN";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)};a.appendChild(sp)}
+    }
+    var cp=el("button","link","Salin");cp.onclick=function(){var t=x.dir==="ms2zh"?x.zh:x.ms;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){cp.textContent="Disalin"},function(){cp.textContent="Tak dapat salin"});setTimeout(function(){cp.textContent="Salin"},1500)};a.appendChild(cp);
+    b.appendChild(a);
+  }
+  $("big").onclick=function(){this.classList.remove("open")};
+  function renderHist(){
+    var ul=$("hist");ul.textContent="";$("histH").hidden=$("histNote").hidden=!hist.length;
+    hist.forEach(function(x){var li=el("li"),b=el("button");
+      b.appendChild(el("span","a",x.src));b.appendChild(el("span","b",x.dir==="ms2zh"?x.zh:x.ms));
+      b.onclick=function(){showTr(x);window.scrollTo({top:0,behavior:"smooth"})};li.appendChild(b);ul.appendChild(li)});
+  }
+  function translate(){
+    var text=$("src").value.trim(),key=load("gz.dskey","");err("");
+    if(!text)return;
+    var same=hist.filter(function(x){return x.dir===dir&&x.src===text})[0];
+    if(same){showTr(same);return}
+    if(!key){err("Masukkan kunci API DeepSeek dulu (di bawah).");$("keyBox").open=true;return}
+    if(!navigator.onLine){err("Offline. Terjemahan baru perlukan internet; yang tersimpan di bawah masih boleh dibuka.");return}
+    var sys=dir==="ms2zh"?
+      "You translate Malay (Bahasa Melayu) into natural, polite Simplified Chinese as spoken in Guangzhou, for a Malaysian tourist talking to shopkeepers, drivers and hotel staff. Reply ONLY with JSON: {\"zh\": \"<Chinese>\", \"pinyin\": \"<Hanyu Pinyin with tone marks>\"}.":
+      "You translate Chinese (Simplified, Traditional or Cantonese written forms) into natural Malay (Bahasa Melayu) for a Malaysian tourist. Reply ONLY with JSON: {\"ms\": \"<Malay>\"}.";
+    $("go").disabled=true;$("go").textContent="Menterjemah…";
+    if(inflight)inflight.abort();inflight=new AbortController();var t=setTimeout(function(){inflight.abort()},30000);
+    fetch("https://api.deepseek.com/chat/completions",{method:"POST",signal:inflight.signal,
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model:"deepseek-chat",temperature:1.3,response_format:{type:"json_object"},
+        messages:[{role:"system",content:sys},{role:"user",content:text}]})})
+    .then(function(r){
+      if(r.status===401)throw new Error("Kunci API tidak sah. Semak semula kunci di bawah.");
+      if(r.status===402)throw new Error("Baki akaun DeepSeek habis. Tambah kredit di platform.deepseek.com.");
+      if(r.status===429)throw new Error("Terlalu banyak permintaan. Cuba lagi sebentar.");
+      if(!r.ok)throw new Error("DeepSeek balas ralat "+r.status+". Cuba lagi.");
+      return r.json();
+    }).then(function(j){
+      var o=JSON.parse(j.choices[0].message.content.replace(/```json|```/g,"").trim());
+      var x={dir:dir,src:text,zh:o.zh||"",py:o.pinyin||"",ms:o.ms||"",at:Date.now()};
+      if(!(x.zh||x.ms))throw new Error("Jawapan kosong. Cuba lagi.");
+      hist=[x].concat(hist.filter(function(h){return !(h.dir===x.dir&&h.src===x.src)})).slice(0,40);
+      save("gz.hist",hist);showTr(x);renderHist();
+    }).catch(function(e){
+      err(e.name==="AbortError"?"Tiada jawapan dalam 30 saat. Semak sambungan internet dan cuba lagi.":
+        (e instanceof TypeError?"Tak dapat sambung ke DeepSeek. Semak internet dan cuba lagi.":e.message));
+    }).finally(function(){clearTimeout(t);$("go").disabled=false;$("go").textContent="Terjemah"});
+  }
+  $("go").onclick=translate;
+  $("src").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))translate()});
+  function keyUI(){var k=load("gz.dskey","");$("key").value="";$("key").placeholder=k?"Kunci disimpan (…"+k.slice(-4)+")":"sk-…";$("keyBox").open=!k}
+  $("keySave").onclick=function(){var v=$("key").value.trim();if(!v){$("keyMsg").textContent="Tampal kunci dulu.";return}save("gz.dskey",v);$("keyMsg").textContent="Kunci disimpan.";err("");keyUI()};
+  $("keyDel").onclick=function(){try{localStorage.removeItem("gz.dskey")}catch(e){}$("keyMsg").textContent="Kunci dipadam.";keyUI()};
+  setDir();renderHist();keyUI();
 
   /* ---------- boot ---------- */
   function stale(x,h){return !x||Date.now()-x.at>h*3600e3}

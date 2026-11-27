@@ -1,7 +1,7 @@
 // Bump VERSION whenever you change index.html so phones pick up the update.
-const VERSION = "gz-v3";
+const VERSION = "gz-v4";
 const SHELL = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
-const LIVE = ["open.er-api.com", "api.frankfurter.app", "api.open-meteo.com"];
+const LIVE = ["open.er-api.com", "api.frankfurter.app", "api.open-meteo.com", "api.deepseek.com"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
