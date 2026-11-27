@@ -634,7 +634,8 @@ function prayerTimes(dateStr,lat,lng,tz){
   document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){closeOv(b.closest(".ov"))}});
 
   /* ---------- hotel card ---------- */
-  var hotel=load("gz.hotel",{n:"",a:"",e:"",p:""});
+  var HOTEL0={n:"Sunny Apartment",a:"广州市越秀区北京路148-149号",e:"Sunny Apartment (Guangzhou Beijing Road Jinyuan), Jinyuan International Mansion, Room 2624, 26th floor, 148-149 Beijing Road, Yuexiu, Guangzhou",p:""};
+  var hotel=load("gz.hotel",null);if(!hotel||(!hotel.n&&!hotel.a))hotel=HOTEL0;
   function renderHotel(){
     var c=$("hotelCard");c.textContent="";
     if(!hotel.n&&!hotel.a){c.appendChild(el("div","ha","Belum ada maklumat hotel."));c.appendChild(el("p","foot","Tekan “Ubah maklumat hotel” di bawah untuk isi."));$("hotelEdit").open=true}
