@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tukar">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#EAF0ED" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1A17" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Tukar – currency converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0ED; --surface:#F7FAF8; --ink:#12302B; --muted:#5B726C;
+  --from:#1F5A4C; --to:#6A3F94; --line:#CBD8D2; --field:#DFE8E4;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A17; --surface:#15241F; --ink:#E3EEEA; --muted:#8FA8A0;
+    --from:#78C7AF; --to:#C2A6E2; --line:#28403A; --field:#1D302A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A17; --surface:#15241F; --ink:#E3EEEA; --muted:#8FA8A0;
+  --from:#78C7AF; --to:#C2A6E2; --line:#28403A; --field:#1D302A;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent;
+}
+main{max-width:440px;margin:0 auto;padding:20px 20px 32px}
+.pane{background:var(--surface);border-radius:22px;padding:18px 18px 20px;position:relative}
+.pane.from{border-bottom-left-radius:6px;border-bottom-right-radius:6px}
+.pane.to{border-top-left-radius:6px;border-top-right-radius:6px;margin-top:4px}
+.chip{position:relative;display:inline-flex;align-items:center;gap:8px;
+  background:var(--field);border-radius:999px;padding:7px 14px 7px 12px;font-weight:500;font-size:15px}
+.chip select{position:absolute;inset:0;opacity:0;width:100%;font-size:16px;cursor:pointer}
+.chip .code{font-weight:700;letter-spacing:.02em}
+.chip .name{color:var(--muted)}
+.chip svg{width:12px;height:12px;color:var(--muted)}
+.chip:focus-within{outline:2px solid var(--from);outline-offset:2px}
+.amount{display:block;width:100%;border:0;background:none;color:var(--from);
+  font:700 clamp(40px,13vw,60px)/1.1 "Onest",system-ui,sans-serif;font-variant-numeric:tabular-nums;
+  padding:10px 0 0;margin:0;letter-spacing:-.02em;caret-color:var(--from);min-width:0}
+.amount:focus{outline:none}
+.result{color:var(--to);overflow-wrap:anywhere}
+.swap{position:absolute;right:18px;bottom:-25px;z-index:2;width:46px;height:46px;border-radius:50%;
+  border:4px solid var(--bg);background:var(--ink);color:var(--bg);display:grid;place-items:center;cursor:pointer;padding:0;
+  transition:transform .25s ease}
+.swap svg{width:18px;height:18px}
+.swap:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+.swap.spin{transform:rotate(180deg)}
+.rate{margin:14px 4px 0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:15px}
+.rate b{font-weight:500}
+.link{background:none;border:0;color:var(--from);font:inherit;font-weight:500;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link:focus-visible{outline:2px solid var(--from);outline-offset:2px;border-radius:4px}
+.edit{display:none;margin:10px 0 0;background:var(--surface);border-radius:16px;padding:14px}
+.edit.open{display:block}
+.edit label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+.edit input{width:9em;font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.edit .row{display:flex;gap:16px;margin-top:10px}
+.btn{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 16px;background:var(--ink);color:var(--bg);cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+.also{margin-top:26px}
+.also h2{font-size:15px;font-weight:500;color:var(--muted);margin:0 4px 6px}
+.also ul{list-style:none;margin:0;padding:0}
+.also li{display:flex;justify-content:space-between;align-items:baseline;padding:11px 4px;border-top:1px solid var(--line);font-size:17px}
+.also li button{all:unset;cursor:pointer;display:flex;justify-content:space-between;width:100%;gap:12px}
+.also li button:focus-visible{outline:2px solid var(--from);outline-offset:2px;border-radius:4px}
+.also .c{color:var(--muted)}
+.foot{margin:22px 4px 0;font-size:13px;line-height:1.5;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.swap{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <section class="pane from" aria-label="Convert from">
+    <label class="chip"><span class="code" id="fromCode"></span><span class="name" id="fromName"></span>
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+      <select id="fromSel" aria-label="From currency"></select></label>
+    <input id="amt" class="amount" inputmode="decimal" autocomplete="off" aria-label="Amount" value="100">
+    <button class="swap" id="swap" aria-label="Swap currencies">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M5 2v13M5 15l-3-3M5 15l3-3M13 16V3M13 3l-3 3M13 3l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </section>
+  <section class="pane to" aria-label="Convert to">
+    <label class="chip"><span class="code" id="toCode"></span><span class="name" id="toName"></span>
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+      <select id="toSel" aria-label="To currency"></select></label>
+    <div id="out" class="amount result" aria-live="polite"></div>
+  </section>
+
+  <div class="rate"><span id="rateTxt"></span><button class="link" id="editBtn" aria-expanded="false">Edit rate</button></div>
+  <div class="edit" id="edit">
+    <label>1 <span id="eCode"></span> = <input id="eVal" inputmode="decimal"> MYR</label>
+    <div class="row"><button class="btn" id="eSave">Save rate</button><button class="link" id="eReset">Use bank rate</button></div>
+  </div>
+
+  <section class="also"><h2 id="alsoH"></h2><ul id="also"></ul></section>
+
+  <p class="foot"><span id="foot"></span> <button class="link" id="refresh">Refresh rates</button></p>
+</main>
+<script>
+(function(){
+  // Bank Negara Malaysia middle rates, MYR per 1 unit, trading date 23 Oct 2026
+  var BANK_DATE="23 Oct 2026";
+  var BANK={MYR:1,USD:4.084,SGD:3.1947,EUR:4.57,GBP:5.4628,AUD:2.8643,JPY:0.026044,CNY:0.6122,THB:0.120989,
+    IDR:0.000226,HKD:0.520795,SAR:1.088138,AED:1.111988,INR:0.043005,KRW:0.00308,NZD:2.3213,CHF:4.9617,
+    CAD:2.9136,PHP:0.064196,TWD:0.125365,BND:3.1947,VND:0.000158};
+  var NAMES={MYR:"Ringgit",USD:"US dollar",SGD:"Singapore dollar",EUR:"Euro",GBP:"Pound",AUD:"Australian dollar",
+    JPY:"Yen",CNY:"Renminbi",THB:"Baht",IDR:"Rupiah",HKD:"HK dollar",SAR:"Saudi riyal",AED:"Dirham",INR:"Rupee",
+    KRW:"Won",NZD:"NZ dollar",CHF:"Swiss franc",CAD:"Canadian dollar",PHP:"Peso",TWD:"NT dollar",BND:"Brunei dollar",VND:"Dong"};
+  var ALSO=["MYR","USD","SGD","EUR","GBP","AUD","JPY","THB","IDR"];
+  var codes=Object.keys(BANK);
+
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+  var custom=load("tukar.custom",{});
+  var st=load("tukar.state",{from:"USD",to:"MYR",amt:"100"});
+  if(!BANK[st.from])st.from="USD"; if(!BANK[st.to])st.to="MYR";
+
+  var $=function(id){return document.getElementById(id)};
+  var amt=$("amt"),fromSel=$("fromSel"),toSel=$("toSel");
+  codes.forEach(function(c){
+    [fromSel,toSel].forEach(function(s){var o=document.createElement("option");o.value=c;o.textContent=c+" – "+NAMES[c];s.appendChild(o)});
+  });
+  amt.value=st.amt;
+
+  var live=load("tukar.live",null); // {rates:{code:MYR per unit}, at:ms, src:""}
+  function rate(c){return custom[c]||(live&&live.rates[c])||BANK[c]}
+
+  function fetchJSON(u){
+    var ctl=new AbortController(),t=setTimeout(function(){ctl.abort()},8000);
+    return fetch(u,{signal:ctl.signal,cache:"no-store"}).then(function(r){clearTimeout(t);if(!r.ok)throw new Error(r.status);return r.json()});
+  }
+  function invert(per){var o={MYR:1};codes.forEach(function(c){if(per[c]>0)o[c]=1/per[c]});return o}
+  var busy=false;
+  function refresh(manual){
+    if(busy)return; if(!navigator.onLine){if(manual)status("You’re offline. Using saved rates.");return}
+    busy=true;$("refresh").textContent="Refreshing…";
+    fetchJSON("https://open.er-api.com/v6/latest/MYR").then(function(j){
+      if(j.result!=="success")throw new Error("bad");return {rates:invert(j.rates),src:"ExchangeRate-API"};
+    }).catch(function(){
+      return fetchJSON("https://api.frankfurter.app/latest?from=MYR").then(function(j){return {rates:invert(j.rates),src:"Frankfurter (ECB)"}});
+    }).then(function(r){
+      live={rates:r.rates,at:Date.now(),src:r.src};save("tukar.live",live);render();
+    }).catch(function(){if(manual)status("Couldn’t reach the rate service. Using saved rates.")})
+    .finally(function(){busy=false;$("refresh").textContent="Refresh rates"});
+  }
+  var msg="";function status(m){msg=m;render();setTimeout(function(){msg="";render()},4000)}
+  function parse(s){var n=parseFloat(String(s).replace(/,/g,""));return isFinite(n)?n:0}
+  function fmt(n,c){
+    var a=Math.abs(n),d=a>=1000?2:a>=1?2:a>=0.01?4:6;
+    if(c==="IDR"||c==="VND"||c==="KRW"||c==="JPY")d=a>=100?0:2;
+    return n.toLocaleString("en-MY",{minimumFractionDigits:Math.min(d,2),maximumFractionDigits:d});
+  }
+  function conv(v,f,t){return v*rate(f)/rate(t)}
+
+  function render(){
+    var f=st.from,t=st.to,v=parse(amt.value);
+    fromSel.value=f;toSel.value=t;
+    $("fromCode").textContent=f;$("fromName").textContent=NAMES[f];
+    $("toCode").textContent=t;$("toName").textContent=NAMES[t];
+    $("out").textContent=fmt(conv(v,f,t),t);
+    $("rateTxt").textContent="1 "+f+" = "+fmt(conv(1,f,t),t)+" "+t;
+    var eCur=f==="MYR"?t:f;
+    $("eCode").textContent=eCur;
+    $("editBtn").hidden=(f==="MYR"&&t==="MYR");
+    if(!$("edit").classList.contains("open"))$("eVal").value=rate(eCur);
+    $("alsoH").textContent=fmt(v,f)+" "+f+" is also";
+    var ul=$("also");ul.textContent="";
+    ALSO.filter(function(c){return c!==f&&c!==t}).slice(0,6).forEach(function(c){
+      var li=document.createElement("li"),b=document.createElement("button"),
+          s1=document.createElement("span"),s2=document.createElement("span");
+      s1.textContent=fmt(conv(v,f,c),c);s2.className="c";s2.textContent=c;
+      b.appendChild(s1);b.appendChild(s2);b.setAttribute("aria-label","Convert to "+c);
+      b.onclick=function(){st.to=c;persist();render()};
+      li.appendChild(b);ul.appendChild(li);
+    });
+    var n=Object.keys(custom).length;
+    var src=live?("Mid-market rates from "+live.src+", updated "+new Date(live.at).toLocaleString("en-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})):
+      ("Bank Negara Malaysia middle rates from "+BANK_DATE);
+    if(!navigator.onLine)src="Offline. "+src;
+    $("foot").textContent=msg||(src+(n?". Your own rate is in use for "+Object.keys(custom).join(", ")+".":". Banks and cards charge a bit more."));
+    try{document.title=f+" → "+t}catch(e){}
+  }
+  function persist(){st.amt=amt.value;save("tukar.state",st)}
+
+  amt.addEventListener("input",function(){persist();render()});
+  amt.addEventListener("focus",function(){amt.select()});
+  fromSel.addEventListener("change",function(){st.from=fromSel.value;persist();render()});
+  toSel.addEventListener("change",function(){st.to=toSel.value;persist();render()});
+  $("swap").addEventListener("click",function(){
+    var r=conv(parse(amt.value),st.from,st.to);
+    var x=st.from;st.from=st.to;st.to=x;
+    amt.value=String(+r.toFixed(2));this.classList.toggle("spin");persist();render();
+  });
+  $("editBtn").addEventListener("click",function(){
+    var e=$("edit"),o=e.classList.toggle("open");this.setAttribute("aria-expanded",o);
+    this.textContent=o?"Close":"Edit rate";
+    if(o){$("eVal").value=rate($("eCode").textContent);$("eVal").focus()}
+  });
+  $("eSave").addEventListener("click",function(){
+    var c=$("eCode").textContent,v=parse($("eVal").value);
+    if(v>0&&c!=="MYR"){custom[c]=v;save("tukar.custom",custom)}
+    $("edit").classList.remove("open");$("editBtn").textContent="Edit rate";$("editBtn").setAttribute("aria-expanded","false");render();
+  });
+  $("eReset").addEventListener("click",function(){
+    var c=$("eCode").textContent;delete custom[c];save("tukar.custom",custom);
+    $("eVal").value=rate(c);render();
+  });
+  $("refresh").addEventListener("click",function(){refresh(true)});
+  window.addEventListener("online",function(){render();refresh(false)});
+  window.addEventListener("offline",render);
+  document.addEventListener("visibilitychange",function(){
+    if(!document.hidden&&(!live||Date.now()-live.at>3*3600e3))refresh(false)});
+  render();
+  if(!live||Date.now()-live.at>3*3600e3)refresh(false);
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
+})();
+</script>
+</body>
+</html>
