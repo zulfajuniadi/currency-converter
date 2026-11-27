@@ -126,7 +126,16 @@ ul{list-style:none;margin:0;padding:0}
 textarea{width:100%;min-height:96px;font:inherit;font-size:17px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
 textarea:focus{outline:2px solid var(--from);outline-offset:1px}
 .go{width:100%;margin-top:10px;padding:13px;font-size:17px}
-.go:disabled{opacity:.55}
+.go:disabled,.cam.busy{opacity:.55;pointer-events:none}
+.gorow{display:flex;gap:10px}.gorow .go{flex:1;text-align:center}
+.cam{background:var(--from)}
+.cam:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+.tr img,.hist img{display:block;max-width:100%;border-radius:12px}
+.tr img{max-height:220px;margin-bottom:10px}
+.hist img{width:56px;height:56px;object-fit:cover;float:left;margin-right:10px;border-radius:8px}
+.hist li button::after{content:"";display:block;clear:both}
+.tr .zs{font-size:18px;color:var(--muted);margin-bottom:8px;white-space:pre-wrap;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.tr .ms{white-space:pre-wrap}
 .tr{margin-top:14px}
 .tr .zh{font-size:30px;line-height:1.35;font-weight:600;overflow-wrap:anywhere;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
 .tr .py{color:var(--muted);margin-top:4px}
@@ -178,8 +187,9 @@ details.key .card{margin-top:8px;font-size:14px}
 <!-- TERJEMAH -->
 <section id="v-terjemah" hidden>
   <div class="dir"><span id="dirTxt">Melayu ⇄ 中文</span></div>
-  <textarea id="src" placeholder="Taip dalam Bahasa Melayu, atau tampal teks Cina…" aria-label="Teks untuk diterjemah"></textarea>
-  <button class="btn go" id="go">Terjemah</button>
+  <textarea id="src" placeholder="Taip dalam Bahasa Melayu, tampal teks Cina, atau tekan 📷 Gambar…" aria-label="Teks untuk diterjemah"></textarea>
+  <div class="gorow"><button class="btn go" id="go">Terjemah</button>
+    <label class="btn go cam" id="camL" role="button" tabindex="0">📷 Gambar<input id="cam" type="file" accept="image/*" hidden></label></div>
   <p class="err" id="err" hidden></p>
   <div class="card tr" id="tr" hidden></div>
   <h2 id="histH" hidden>Terjemahan tersimpan</h2>
@@ -446,9 +456,11 @@ function prayerTimes(dateStr,lat,lng,tz){
   function err(m){$("err").hidden=!m;$("err").textContent=m||""}
   function showTr(x){
     cur=x;var b=$("tr");b.hidden=false;b.textContent="";
-    if(x.dir==="ms2zh"){b.appendChild(el("div","zh",x.zh));if(x.py)b.appendChild(el("div","py",x.py))}
+    if(x.img){var im=el("img");im.src=x.img;im.alt="Gambar yang diterjemah";b.appendChild(im)}
+    if(x.dir==="img"){if(x.zh)b.appendChild(el("div","zs",x.zh));b.appendChild(el("div","ms",x.ms))}
+    else if(x.dir==="ms2zh"){b.appendChild(el("div","zh",x.zh));if(x.py)b.appendChild(el("div","py",x.py))}
     else b.appendChild(el("div","ms",x.ms));
-    b.appendChild(el("div","src",x.src));
+    if(x.dir!=="img")b.appendChild(el("div","src",x.src));
     var a=el("div","acts");
     if(x.dir==="ms2zh"){
       var big=el("button","link","Tunjuk besar");big.onclick=function(){$("bigZh").textContent=x.zh;$("bigPy").textContent=x.py||"";$("big").classList.add("open")};a.appendChild(big);
@@ -461,7 +473,8 @@ function prayerTimes(dateStr,lat,lng,tz){
   function renderHist(){
     var ul=$("hist");ul.textContent="";$("histH").hidden=$("histNote").hidden=!hist.length;
     hist.forEach(function(x){var li=el("li"),b=el("button");
-      b.appendChild(el("span","a",x.src));b.appendChild(el("span","b",x.dir==="ms2zh"?x.zh:x.ms));
+      if(x.img){var im=el("img");im.src=x.img;im.alt="";b.appendChild(im)}
+      b.appendChild(el("span","a",x.dir==="img"?(x.zh||"Gambar").slice(0,60):x.src));b.appendChild(el("span","b",(x.dir==="ms2zh"?x.zh:x.ms).slice(0,120)));
       b.onclick=function(){showTr(x);window.scrollTo({top:0,behavior:"smooth"})};li.appendChild(b);ul.appendChild(li)});
   }
   function translate(){
@@ -478,7 +491,7 @@ function prayerTimes(dateStr,lat,lng,tz){
     if(inflight)inflight.abort();inflight=new AbortController();var t=setTimeout(function(){inflight.abort()},30000);
     fetch("https://api.deepseek.com/chat/completions",{method:"POST",signal:inflight.signal,
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({model:"deepseek-chat",temperature:1.3,response_format:{type:"json_object"},
+      body:JSON.stringify({model:"deepseek-flash",temperature:1.3,response_format:{type:"json_object"},
         messages:[{role:"system",content:sys},{role:"user",content:text}]})})
     .then(function(r){
       if(r.status===401)throw new Error("Kunci API tidak sah. Semak semula kunci di bawah.");
@@ -498,6 +511,46 @@ function prayerTimes(dateStr,lat,lng,tz){
     }).finally(function(){clearTimeout(t);$("go").disabled=false;$("go").textContent="Terjemah"});
   }
   $("go").onclick=translate;
+
+  function shrink(file,max,q){return new Promise(function(ok,no){
+    var u=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){var k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");
+      c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",q))};
+    im.onerror=function(){URL.revokeObjectURL(u);no(new Error("Gambar tak dapat dibuka. Cuba gambar lain."))};im.src=u})}
+  function camBusy(on){$("camL").classList.toggle("busy",on);$("camL").firstChild.nodeValue=on?"Membaca…":"📷 Gambar"}
+  $("camL").addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();$("cam").click()}});
+  $("cam").addEventListener("change",function(){
+    var f=this.files&&this.files[0],key=load("gz.dskey","");this.value="";err("");
+    if(!f)return;
+    if(!key){err("Masukkan kunci API DeepSeek dulu (di bawah).");$("keyBox").open=true;return}
+    if(!navigator.onLine){err("Offline. Terjemah gambar perlukan internet.");return}
+    camBusy(true);
+    Promise.all([shrink(f,1600,.85),shrink(f,240,.7)]).then(function(r){
+      var ctl=new AbortController(),t=setTimeout(function(){ctl.abort()},60000);
+      return fetch("https://api.deepseek.com/chat/completions",{method:"POST",signal:ctl.signal,
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+        body:JSON.stringify({model:"deepseek-flash",response_format:{type:"json_object"},messages:[
+          {role:"system",content:"You help a Malaysian tourist in Guangzhou read photos of signs, menus, labels, price tags and notices. Read all Chinese text in the image and translate it into natural Malay (Bahasa Melayu). For menus or food, say if pork, lard or alcohol appears. Keep prices. Reply ONLY with JSON: {\"zh\": \"<the Chinese text as written, line by line>\", \"ms\": \"<Malay translation, line by line, with short notes if useful>\"}. If there is no Chinese text, put an empty zh and describe the image briefly in Malay in ms."},
+          {role:"user",content:[{type:"text",text:"Terjemah teks dalam gambar ini ke Bahasa Melayu."},{type:"image_url",image_url:{url:r[0]}}]}]})})
+      .then(function(res){clearTimeout(t);
+        if(res.status===401)throw new Error("Kunci API tidak sah. Semak semula kunci di bawah.");
+        if(res.status===402)throw new Error("Baki akaun DeepSeek habis. Tambah kredit di platform.deepseek.com.");
+        if(res.status===429)throw new Error("Terlalu banyak permintaan. Cuba lagi sebentar.");
+        if(res.status===400)return res.json().then(function(j){throw new Error("DeepSeek tolak gambar ini: "+((j.error&&j.error.message)||"ralat 400"))});
+        if(!res.ok)throw new Error("DeepSeek balas ralat "+res.status+". Cuba lagi.");
+        return res.json()})
+      .then(function(j){
+        var c=j.choices[0].message.content,o;
+        try{o=JSON.parse(c.replace(/```json|```/g,"").trim())}catch(e){o={zh:"",ms:c}}
+        var x={dir:"img",src:"",img:r[1],zh:o.zh||"",ms:o.ms||"",at:Date.now()};
+        if(!x.ms)throw new Error("Jawapan kosong. Cuba ambil gambar yang lebih jelas.");
+        hist=[x].concat(hist).slice(0,40);save("gz.hist",hist);showTr(x);renderHist();
+      });
+    }).catch(function(e){err(e.name==="AbortError"?"Tiada jawapan dalam 60 saat. Semak sambungan dan cuba lagi.":
+        (e instanceof TypeError?"Tak dapat sambung ke DeepSeek. Semak internet dan cuba lagi.":e.message))})
+    .finally(function(){camBusy(false)});
+  });
   $("src").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))translate()});
   function keyUI(){var k=load("gz.dskey","");$("key").value="";$("key").placeholder=k?"Kunci disimpan (…"+k.slice(-4)+")":"sk-…";$("keyBox").open=!k}
   $("keySave").onclick=function(){var v=$("key").value.trim();if(!v){$("keyMsg").textContent="Tampal kunci dulu.";return}save("gz.dskey",v);$("keyMsg").textContent="Kunci disimpan.";err("");keyUI()};
