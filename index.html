@@ -110,6 +110,15 @@ ul{list-style:none;margin:0;padding:0}
 .fl .me{font-weight:700}
 .search{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin:4px 0 14px}
 .find{margin:-6px 4px 14px;font-size:15px}
+/* prayer */
+.sol{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:10px;text-align:center}
+.sol div{background:var(--field);border-radius:10px;padding:6px 0;font-size:12px;color:var(--muted)}
+.sol b{display:block;font-size:14px;color:var(--ink)}
+.sol .nx{background:var(--from);color:var(--bg)}.sol .nx b{color:var(--bg)}
+.it article.on .sol div{background:var(--surface)}.it article.on .sol .nx{background:var(--from)}
+.next{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:15px}
+.next b{color:var(--from)}
+@media (max-width:360px){.sol{grid-template-columns:repeat(3,1fr)}}
 /* translate */
 .dir{display:flex;align-items:center;gap:10px;margin:8px 4px 10px;font-weight:600}
 .dir .sw{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
@@ -158,9 +167,11 @@ details.key .card{margin-top:8px;font-size:14px}
   <div class="card" id="wx">
     <div class="now"><div class="ic" id="wxIc">⛅</div><div><div class="t" id="wxT">–</div><div class="d" id="wxD">Memuatkan cuaca…</div></div></div>
     <div class="days" id="wxDays"></div>
+    <p class="next" id="next" hidden></p>
   </div>
   <p class="foot" id="wxFoot"></p>
   <h2>Jadual harian</h2>
+  <p class="foot" style="margin-top:-4px">Waktu solat Guangzhou (waktu China, 0 jam beza dengan Malaysia) dikira dalam telefon dan berfungsi offline. Kaedah: Subuh 20°, Isyak 18°, Asar Syafie, dengan ihtiyati 2 minit. Semak dengan masjid tempatan jika boleh.</p>
   <div class="it" id="it"></div>
 </section>
 
@@ -256,6 +267,58 @@ details.key .card{margin-top:8px;font-size:14px}
   function dlabel(s){var d=pd(s);return HARI[d.getDay()]+", "+d.getDate()+" "+BLN[d.getMonth()]}
   function todayGZ(){try{return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Shanghai"}).format(new Date())}catch(e){return new Date().toISOString().slice(0,10)}}
 
+  /* ---------- prayer times (computed on device, works offline) ---------- */
+function prayerTimes(dateStr,lat,lng,tz){
+  var p=dateStr.split("-").map(Number),y=p[0],m=p[1],d=p[2];
+  if(m<=2){y-=1;m+=12}
+  var A=Math.floor(y/100),B=2-A+Math.floor(A/4);
+  var jd=Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5 - lng/(15*24);
+  var R=Math.PI/180,dsin=function(x){return Math.sin(x*R)},dcos=function(x){return Math.cos(x*R)};
+  function sun(j){
+    var D=j-2451545,g=(357.529+0.98560028*D)%360,q=(280.459+0.98564736*D)%360,
+        L=(q+1.915*dsin(g)+0.020*dsin(2*g))%360,e=23.439-0.00000036*D,
+        RA=Math.atan2(dcos(e)*dsin(L),dcos(L))/R/15; RA=((RA%24)+24)%24;
+    var eqt=q/15-RA; eqt=eqt-24*Math.round(eqt/24);
+    return {dec:Math.asin(dsin(e)*dsin(L))/R,eqt:eqt};
+  }
+  var s=sun(jd+0.5),noon=12+tz-lng/15-s.eqt;
+  function T(angle,dec){return Math.acos((-dsin(angle)-dsin(lat)*dsin(dec))/(dcos(lat)*dcos(dec)))/R/15}
+  function asrAngle(dec){return -Math.atan(1/(1+Math.tan(Math.abs(lat-dec)*R)))/R}
+  var o={
+    subuh:noon-T(20,sun(jd+0.25).dec),
+    syuruk:noon-T(0.833,sun(jd+0.27).dec),
+    zohor:noon,
+    asar:noon+T(asrAngle(sun(jd+0.63).dec),sun(jd+0.63).dec),
+    maghrib:noon+T(0.833,sun(jd+0.73).dec),
+    isyak:noon+T(18,sun(jd+0.77).dec)
+  };
+  // ihtiyati: +2 min (Zohor +2 as well), Syuruk -2 min
+  var out={};Object.keys(o).forEach(function(k){var h=o[k]+(k==="syuruk"?-2:2)/60,mm=Math.round(h*60);out[k]=String(Math.floor(mm/60)).padStart(2,"0")+":"+String(mm%60).padStart(2,"0")});
+  return out;
+}
+
+  var SOL=[["subuh","Subuh"],["syuruk","Syuruk"],["zohor","Zohor"],["asar","Asar"],["maghrib","Maghrib"],["isyak","Isyak"]];
+  function nowGZ(){try{var p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Shanghai",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date());return p}catch(e){return "00:00"}}
+  function nextPrayer(day){
+    var pt=prayerTimes(day,23.13,113.26,8),n=nowGZ();
+    for(var i=0;i<SOL.length;i++){if(SOL[i][0]!=="syuruk"&&pt[SOL[i][0]]>n)return SOL[i][0]}
+    return null;
+  }
+  function solRow(day,today){
+    var pt=prayerTimes(day,23.13,113.26,8),nx=day===today?nextPrayer(day):null,g=el("div","sol");
+    SOL.forEach(function(x){var c=el("div",x[0]===nx?"nx":null,x[1]);c.appendChild(el("b",null,pt[x[0]]));g.appendChild(c)});
+    return g;
+  }
+  function renderNext(){
+    var today=todayGZ(),p=$("next"),inTrip=DAYS.some(function(d){return d.d===today});
+    if(!inTrip){p.hidden=true;return}
+    var nx=nextPrayer(today);p.hidden=false;p.textContent="";
+    if(nx){var nm=SOL.filter(function(x){return x[0]===nx})[0][1];
+      p.appendChild(document.createTextNode("Solat seterusnya di Guangzhou: "));p.appendChild(el("b",null,nm+" "+prayerTimes(today,23.13,113.26,8)[nx]))}
+    else p.textContent="Semua waktu solat hari ini sudah masuk.";
+  }
+  setInterval(function(){if(!document.hidden&&!$("v-jadual").hidden)renderWx()},60000);
+
   /* ---------- weather ---------- */
   var WMO={0:["☀️","Cerah"],1:["🌤️","Kebanyakan cerah"],2:["⛅","Separa mendung"],3:["☁️","Mendung"],45:["🌫️","Berkabus"],48:["🌫️","Berkabus"],
     51:["🌦️","Gerimis"],53:["🌦️","Gerimis"],55:["🌦️","Gerimis lebat"],61:["🌧️","Hujan renyai"],63:["🌧️","Hujan"],65:["🌧️","Hujan lebat"],
@@ -281,7 +344,7 @@ details.key .card{margin-top:8px;font-size:14px}
     });
     $("wxFoot").textContent=wx?("Cuaca Guangzhou dari Open-Meteo, dikemas kini "+new Date(wx.at).toLocaleString("ms-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+(navigator.onLine?"":". Offline.")):
       (navigator.onLine?"Memuatkan ramalan cuaca…":"Offline. Ramalan cuaca akan dimuatkan bila ada internet.");
-    renderIt();
+    renderIt();renderNext();
   }
   function getWx(){
     if(!navigator.onLine)return;
@@ -300,6 +363,7 @@ details.key .card{margin-top:8px;font-size:14px}
       var k=wx&&wx.daily?wx.daily.time.indexOf(day.d):-1;
       if(k>=0){var c=w(wx.daily.weather_code[k]),p=wx.daily.precipitation_probability_max[k];
         a.appendChild(el("div","wx",c[0]+" "+c[1]+", "+Math.round(wx.daily.temperature_2m_min[k])+"–"+Math.round(wx.daily.temperature_2m_max[k])+"°C"+(p!=null?", hujan "+p+"%":"")))}
+      a.appendChild(solRow(day.d,today));
       var ul=el("ul");
       day.items.forEach(function(it){var li=el("li");if(it[0]){li.appendChild(el("span","time",it[0]+" "))}li.appendChild(document.createTextNode(it[1]));ul.appendChild(li)});
       a.appendChild(ul);box.appendChild(a);
