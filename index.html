@@ -53,6 +53,11 @@ h2{font-size:17px;margin:24px 4px 8px}
   font:700 clamp(42px,14vw,62px)/1.1 system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;
   padding:6px 0 0;margin:0;letter-spacing:-.02em;min-width:0}
 .amount:focus{outline:none}
+.swap{position:absolute;right:16px;bottom:-25px;z-index:2;width:46px;height:46px;border-radius:50%;
+  border:4px solid var(--bg);background:var(--ink);color:var(--bg);display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .25s ease}
+.swap svg{width:18px;height:18px}.swap.spin{transform:rotate(180deg)}
+.swap:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.swap{transition:none}}
 .pfrom{border-bottom-left-radius:6px;border-bottom-right-radius:6px}
 .pto{border-top-left-radius:6px;border-top-right-radius:6px;margin-top:4px}
 .result{color:var(--to);overflow-wrap:anywhere}
@@ -142,7 +147,7 @@ details.key .card{margin-top:8px;font-size:14px}
 <nav aria-label="Bahagian">
   <a href="#jadual" data-v="jadual">Jadual</a>
   <a href="#terjemah" data-v="terjemah">Terjemah</a>
-  <a href="#tukar" data-v="tukar">RMB ➜ RM</a>
+  <a href="#tukar" data-v="tukar">RMB ⇄ RM</a>
   <a href="#flight" data-v="flight">Flight</a>
 </nav>
 
@@ -161,8 +166,8 @@ details.key .card{margin-top:8px;font-size:14px}
 
 <!-- TERJEMAH -->
 <section id="v-terjemah" hidden>
-  <div class="dir"><span id="dirTxt">Melayu ➜ 中文</span><button class="sw" id="dirSw" aria-label="Tukar arah terjemahan">⇄ Tukar arah</button></div>
-  <textarea id="src" placeholder="Taip ayat dalam Bahasa Melayu…" aria-label="Teks untuk diterjemah"></textarea>
+  <div class="dir"><span id="dirTxt">Melayu ⇄ 中文</span></div>
+  <textarea id="src" placeholder="Taip dalam Bahasa Melayu, atau tampal teks Cina…" aria-label="Teks untuk diterjemah"></textarea>
   <button class="btn go" id="go">Terjemah</button>
   <p class="err" id="err" hidden></p>
   <div class="card tr" id="tr" hidden></div>
@@ -183,12 +188,15 @@ details.key .card{margin-top:8px;font-size:14px}
 
 <!-- TUKAR -->
 <section id="v-tukar" hidden>
-  <div class="card pfrom">
-    <div class="cur"><span class="lbl">CNY <span>Yuan / RMB</span></span><span class="lbl">¥</span></div>
-    <input id="amt" class="amount" inputmode="decimal" autocomplete="off" aria-label="Jumlah dalam yuan" value="100">
+  <div class="card pfrom" style="position:relative">
+    <div class="cur"><span class="lbl" id="fLbl"></span><span class="lbl" id="fSym"></span></div>
+    <input id="amt" class="amount" inputmode="decimal" autocomplete="off" aria-label="Jumlah" value="100">
+    <button class="swap" id="swap" aria-label="Tukar arah: RMB ke RM atau RM ke RMB">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M5 2v13M5 15l-3-3M5 15l3-3M13 16V3M13 3l-3 3M13 3l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
   </div>
   <div class="card pto">
-    <div class="cur"><span class="lbl">MYR <span>Ringgit</span></span><span class="lbl">RM</span></div>
+    <div class="cur"><span class="lbl" id="tLbl"></span><span class="lbl" id="tSym"></span></div>
     <div id="out" class="amount result" aria-live="polite"></div>
   </div>
   <div class="quick" id="quick"></div>
@@ -302,20 +310,32 @@ details.key .card{margin-top:8px;font-size:14px}
   var FALLBACK=0.6122, FALLBACK_SRC="Bank Negara Malaysia, 23 Okt 2026";
   var live=load("gz.rate",null), custom=load("gz.custom",null), amt=$("amt");
   amt.value=load("gz.amt","100");
+  var cdir=load("gz.cdir","cny2myr");
+  var C={CNY:{lbl:"CNY",name:"Yuan / RMB",sym:"¥",pre:"¥"},MYR:{lbl:"MYR",name:"Ringgit",sym:"RM",pre:"RM"}};
+  function fc(){return cdir==="cny2myr"?C.CNY:C.MYR}function tc(){return cdir==="cny2myr"?C.MYR:C.CNY}
+  function conv(v){return cdir==="cny2myr"?v*rate():v/rate()}
+  function lbl(id,c){var e=$(id);e.textContent=c.lbl+" ";e.appendChild(el("span",null,c.name))}
   function rate(){return custom||(live&&live.r)||FALLBACK}
   function parse(s){var n=parseFloat(String(s).replace(/,/g,""));return isFinite(n)?n:0}
   function rm(n){return n.toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2})}
   function renderCv(msg){
-    var v=parse(amt.value),r=rate();
-    $("out").textContent=rm(v*r);
-    $("rateTxt").textContent="¥1 = RM"+r.toFixed(4);
+    var v=parse(amt.value),r=rate(),f=fc(),t=tc();
+    lbl("fLbl",f);lbl("tLbl",t);$("fSym").textContent=f.sym;$("tSym").textContent=t.sym;
+    amt.setAttribute("aria-label","Jumlah dalam "+f.name);
+    $("out").textContent=rm(conv(v));
+    $("rateTxt").textContent=cdir==="cny2myr"?"¥1 = RM"+r.toFixed(4):"RM1 = ¥"+(1/r).toFixed(4);
+    var q=$("quick");q.textContent="";
+    (cdir==="cny2myr"?[10,50,100,500]:[10,50,100,500]).forEach(function(y){var b=el("button",null,f.pre+y);b.onclick=function(){amt.value=y;save("gz.amt",amt.value);renderCv()};q.appendChild(b)});
     if(!$("edit").classList.contains("open"))$("eVal").value=r.toFixed(4);
     var tb=$("tbl");tb.textContent="";
-    [1,5,10,20,50,100,200,500,1000].forEach(function(y){var li=el("li");li.appendChild(el("span",null,"¥"+y.toLocaleString("en")));li.appendChild(el("b",null,"RM"+rm(y*r)));tb.appendChild(li)});
+    [1,5,10,20,50,100,200,500,1000].forEach(function(y){var li=el("li");li.appendChild(el("span",null,f.pre+y.toLocaleString("en")));li.appendChild(el("b",null,t.pre+rm(conv(y))));tb.appendChild(li)});
     var src=custom?"Kadar anda sendiri":live?("Kadar pasaran dari "+live.src+", "+new Date(live.at).toLocaleString("ms-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})):("Kadar "+FALLBACK_SRC);
     $("rFoot").textContent=msg||(src+(navigator.onLine?".":". Offline."));
   }
-  [10,50,100,500].forEach(function(y){var b=el("button",null,"¥"+y);b.onclick=function(){amt.value=y;save("gz.amt",amt.value);renderCv()};$("quick").appendChild(b)});
+  $("swap").addEventListener("click",function(){
+    var r=conv(parse(amt.value));cdir=cdir==="cny2myr"?"myr2cny":"cny2myr";save("gz.cdir",cdir);
+    amt.value=String(+r.toFixed(2));save("gz.amt",amt.value);this.classList.toggle("spin");renderCv();
+  });
   amt.addEventListener("input",function(){save("gz.amt",amt.value);renderCv()});
   amt.addEventListener("focus",function(){amt.select()});
   $("editBtn").addEventListener("click",function(){var o=$("edit").classList.toggle("open");this.setAttribute("aria-expanded",o);this.textContent=o?"Tutup":"Ubah kadar";if(o)$("eVal").focus()});
@@ -351,13 +371,14 @@ details.key .card{margin-top:8px;font-size:14px}
   $("q").addEventListener("input",renderFl);
 
   /* ---------- translate ---------- */
-  var dir=load("gz.dir","ms2zh"),hist=load("gz.hist",[]),cur=null,inflight=null;
+  var dir="ms2zh",hist=load("gz.hist",[]),cur=null,inflight=null;
+  function detect(t){return /[\u3400-\u9fff\uf900-\ufaff]/.test(t)?"zh2ms":"ms2zh"}
   function hasKey(){return !!load("gz.dskey","")}
   function setDir(){
-    $("dirTxt").textContent=dir==="ms2zh"?"Melayu ➜ 中文":"中文 ➜ Melayu";
-    $("src").placeholder=dir==="ms2zh"?"Taip ayat dalam Bahasa Melayu…":"Tampal atau taip teks Cina…";
+    var t=$("src").value.trim();dir=detect(t);
+    $("dirTxt").textContent=!t?"Melayu ⇄ 中文 (automatik)":dir==="ms2zh"?"Melayu ➜ 中文":"中文 ➜ Melayu";
   }
-  $("dirSw").onclick=function(){dir=dir==="ms2zh"?"zh2ms":"ms2zh";save("gz.dir",dir);setDir()};
+  $("src").addEventListener("input",setDir);
   function err(m){$("err").hidden=!m;$("err").textContent=m||""}
   function showTr(x){
     cur=x;var b=$("tr");b.hidden=false;b.textContent="";
@@ -380,7 +401,7 @@ details.key .card{margin-top:8px;font-size:14px}
       b.onclick=function(){showTr(x);window.scrollTo({top:0,behavior:"smooth"})};li.appendChild(b);ul.appendChild(li)});
   }
   function translate(){
-    var text=$("src").value.trim(),key=load("gz.dskey","");err("");
+    var text=$("src").value.trim(),key=load("gz.dskey","");err("");setDir();
     if(!text)return;
     var same=hist.filter(function(x){return x.dir===dir&&x.src===text})[0];
     if(same){showTr(same);return}
