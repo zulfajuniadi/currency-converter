@@ -119,6 +119,45 @@ ul{list-style:none;margin:0;padding:0}
 .next{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:15px}
 .next b{color:var(--from)}
 @media (max-width:360px){.sol{grid-template-columns:repeat(3,1fr)}}
+/* tools row, overlays */
+.tools{display:flex;gap:10px;margin:0 0 14px}
+.tools button{flex:1;font:inherit;font-weight:600;font-size:15px;border:0;border-radius:14px;padding:12px 6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.tools button:focus-visible{outline:2px solid var(--from);outline-offset:2px}
+.ov{position:fixed;inset:0;z-index:30;background:var(--bg);display:none;overflow:auto;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 18px calc(env(safe-area-inset-bottom,0px) + 24px)}
+.ov.open{display:block}
+.ov .bar{display:flex;justify-content:space-between;align-items:center;max-width:480px;margin:0 auto 10px}
+.ov .bar h2{margin:0}
+.ov .body{max-width:480px;margin:0 auto}
+.hotel{background:var(--surface);border-radius:18px;padding:22px 18px;text-align:center}
+.hotel .ask{font-size:20px;color:var(--muted);font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.hotel .hn{font-size:clamp(30px,9vw,44px);font-weight:700;line-height:1.25;margin:12px 0;overflow-wrap:anywhere;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.hotel .ha{font-size:clamp(22px,6.5vw,30px);line-height:1.4;overflow-wrap:anywhere;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.hotel .hp{font-size:22px;margin-top:12px}
+.hotel .hp a{color:var(--from);font-weight:700}
+.form label{display:block;font-weight:600;margin:12px 0 4px}
+.form input,.form textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.form textarea{min-height:80px}
+.qwrap{text-align:center}
+.compass{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:20px auto;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px var(--line)}
+.compass .dial{position:absolute;inset:0;transition:transform .15s linear}
+.compass .n{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-weight:700;color:#B3261E}
+.compass .arrow{position:absolute;left:50%;top:50%;width:10px;height:46%;margin-left:-5px;transform-origin:50% 100%;translate:0 -100%;
+  background:linear-gradient(var(--from),var(--from));border-radius:5px}
+.compass .arrow::before{content:"🕋";position:absolute;top:-34px;left:50%;transform:translateX(-50%);font-size:28px}
+.compass .dot{position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--ink)}
+.compass.ok{box-shadow:inset 0 0 0 4px var(--from)}
+.qdeg{font-size:28px;font-weight:700}
+/* phrases */
+.ph h3{font-size:15px;color:var(--muted);margin:18px 4px 6px;font-weight:600}
+.ph ul{background:var(--surface);border-radius:16px;overflow:hidden}
+.ph li button{all:unset;display:block;width:100%;cursor:pointer;padding:11px 14px;border-top:1px solid var(--line)}
+.ph li:first-child button{border-top:0}
+.ph li button:focus-visible{outline:2px solid var(--from);outline-offset:-2px}
+.ph .m{display:block}
+.ph .z{display:block;font-size:19px;font-weight:600;font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.ph .p{display:block;font-size:13px;color:var(--muted)}
+details.ph summary{cursor:pointer;font-weight:700;font-size:17px;margin:18px 4px 0}
 /* translate */
 .dir{display:flex;align-items:center;gap:10px;margin:8px 4px 10px;font-weight:600}
 .dir .sw{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
@@ -173,6 +212,7 @@ details.key .card{margin-top:8px;font-size:14px}
 <section id="v-jadual">
   <h1>Guangzhou</h1>
   <p class="sub">27 Nov – 2 Dis 2026</p>
+  <div class="tools"><button id="openHotel">🏨 Kad hotel</button><button id="openQibla">🧭 Kiblat</button></div>
   <div class="card" id="wx">
     <div class="now"><div class="ic" id="wxIc">⛅</div><div><div class="t" id="wxT">–</div><div class="d" id="wxD">Memuatkan cuaca…</div></div></div>
     <div class="days" id="wxDays"></div>
@@ -195,6 +235,10 @@ details.key .card{margin-top:8px;font-size:14px}
   <h2 id="histH" hidden>Terjemahan tersimpan</h2>
   <p class="foot" id="histNote" hidden>Ini disimpan dalam telefon dan boleh dibuka tanpa internet.</p>
   <ul class="hist" id="hist"></ul>
+  <details class="ph" id="phBox" open>
+    <summary>Frasa pantas (offline)</summary>
+    <div id="ph"></div>
+  </details>
   <details class="key" id="keyBox">
     <summary>Kunci API DeepSeek</summary>
     <div class="card">
@@ -205,6 +249,33 @@ details.key .card{margin-top:8px;font-size:14px}
     </div>
   </details>
 </section>
+<div class="ov" id="ovHotel" role="dialog" aria-label="Kad hotel">
+  <div class="bar"><h2>Kad hotel</h2><button class="link" data-close>Tutup</button></div>
+  <div class="body">
+    <div class="hotel" id="hotelCard"></div>
+    <p class="foot">Tunjuk skrin ini kepada driver atau teksi.</p>
+    <details id="hotelEdit"><summary class="link" style="list-style:none">Ubah maklumat hotel</summary>
+      <div class="form">
+        <label for="hN">Nama hotel (tulisan Cina)</label><input id="hN" placeholder="例如：广州某某酒店">
+        <label for="hA">Alamat (tulisan Cina)</label><textarea id="hA" placeholder="广州市…区…路…号"></textarea>
+        <label for="hE">Nama dalam Bahasa Inggeris (pilihan)</label><input id="hE">
+        <label for="hP">Telefon hotel</label><input id="hP" inputmode="tel" placeholder="+86 20 …">
+        <p class="foot">Salin nama dan alamat Cina terus dari emel tempahan (Trip.com, Agoda, Booking). Jangan guna terjemahan mesin untuk alamat.</p>
+        <button class="btn" id="hSave">Simpan</button>
+      </div>
+    </details>
+  </div>
+</div>
+<div class="ov" id="ovQibla" role="dialog" aria-label="Arah kiblat">
+  <div class="bar"><h2>Arah kiblat</h2><button class="link" data-close>Tutup</button></div>
+  <div class="body qwrap">
+    <div class="qdeg">285° <span style="font-size:18px;color:var(--muted);font-weight:500">dari utara (barat-barat laut)</span></div>
+    <div class="compass" id="compass"><div class="dial" id="dial"><span class="n">U</span><div class="arrow" id="arrow"></div></div><div class="dot"></div></div>
+    <p id="qMsg">Tekan butang di bawah untuk hidupkan kompas.</p>
+    <button class="btn" id="qStart">Hidupkan kompas</button>
+    <p class="foot">Pegang telefon rata, jauh dari besi dan magnet. Jika arah melompat-lompat, gerakkan telefon membentuk angka 8 untuk kalibrasi. Kompas telefon boleh lari beberapa darjah; kiblat Guangzhou ialah 285° dari utara benar.</p>
+  </div>
+</div>
 <div class="big" id="big" role="dialog" aria-label="Paparan besar"><div class="zh" id="bigZh"></div><div class="py" id="bigPy"></div><div class="hint">Ketik untuk tutup</div></div>
 
 <!-- TUKAR -->
@@ -556,6 +627,104 @@ function prayerTimes(dateStr,lat,lng,tz){
   $("keySave").onclick=function(){var v=$("key").value.trim();if(!v){$("keyMsg").textContent="Tampal kunci dulu.";return}save("gz.dskey",v);$("keyMsg").textContent="Kunci disimpan.";err("");keyUI()};
   $("keyDel").onclick=function(){try{localStorage.removeItem("gz.dskey")}catch(e){}$("keyMsg").textContent="Kunci dipadam.";keyUI()};
   setDir();renderHist();keyUI();
+
+  /* ---------- overlays ---------- */
+  function openOv(id){$(id).classList.add("open");document.body.style.overflow="hidden"}
+  function closeOv(o){o.classList.remove("open");document.body.style.overflow="";if(o.id==="ovQibla")stopCompass()}
+  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){closeOv(b.closest(".ov"))}});
+
+  /* ---------- hotel card ---------- */
+  var hotel=load("gz.hotel",{n:"",a:"",e:"",p:""});
+  function renderHotel(){
+    var c=$("hotelCard");c.textContent="";
+    if(!hotel.n&&!hotel.a){c.appendChild(el("div","ha","Belum ada maklumat hotel."));c.appendChild(el("p","foot","Tekan “Ubah maklumat hotel” di bawah untuk isi."));$("hotelEdit").open=true}
+    else{
+      c.appendChild(el("div","ask","请带我去这个地址"));
+      if(hotel.n)c.appendChild(el("div","hn",hotel.n));
+      if(hotel.a)c.appendChild(el("div","ha",hotel.a));
+      if(hotel.e)c.appendChild(el("div","foot",hotel.e));
+      if(hotel.p){var d=el("div","hp"),a=el("a",null,hotel.p);a.href="tel:"+hotel.p.replace(/[^\d+]/g,"");d.appendChild(a);c.appendChild(d)}
+    }
+    $("hN").value=hotel.n;$("hA").value=hotel.a;$("hE").value=hotel.e;$("hP").value=hotel.p;
+  }
+  $("hSave").onclick=function(){hotel={n:$("hN").value.trim(),a:$("hA").value.trim(),e:$("hE").value.trim(),p:$("hP").value.trim()};save("gz.hotel",hotel);$("hotelEdit").open=false;renderHotel()};
+  $("openHotel").onclick=function(){renderHotel();openOv("ovHotel")};
+
+  /* ---------- qibla ---------- */
+  var QIBLA=284.6,listening=false;
+  function onOri(e){
+    var h=null;
+    if(typeof e.webkitCompassHeading==="number")h=e.webkitCompassHeading;
+    else if(e.absolute&&typeof e.alpha==="number")h=(360-e.alpha)%360;
+    if(h==null)return;
+    var so=(screen.orientation&&screen.orientation.angle)||window.orientation||0;h=(h+so+360)%360;
+    $("dial").style.transform="rotate("+(-h)+"deg)";
+    var diff=Math.abs(((QIBLA-h)+540)%360-180);
+    $("compass").classList.toggle("ok",diff<5);
+    $("qMsg").textContent=diff<5?"✅ Menghadap kiblat":"Pusing sehingga anak panah 🕋 menghala ke atas ("+Math.round(diff)+"° lagi)";
+  }
+  function stopCompass(){if(!listening)return;window.removeEventListener("deviceorientationabsolute",onOri);window.removeEventListener("deviceorientation",onOri);listening=false}
+  $("arrow").style.transform="rotate("+QIBLA+"deg)";
+  $("qStart").onclick=function(){
+    function go(){
+      if("ondeviceorientationabsolute" in window)window.addEventListener("deviceorientationabsolute",onOri);
+      else window.addEventListener("deviceorientation",onOri);
+      listening=true;$("qStart").hidden=true;$("qMsg").textContent="Gerakkan telefon perlahan-lahan…";
+      setTimeout(function(){if($("qMsg").textContent.indexOf("Gerakkan")===0)$("qMsg").textContent="Kompas tidak memberi bacaan pada telefon ini. Guna 285° dengan app Kompas telefon."},4000);
+    }
+    if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      DeviceOrientationEvent.requestPermission().then(function(p){if(p==="granted")go();else $("qMsg").textContent="Kebenaran kompas ditolak. Benarkan dalam Settings, atau guna 285° dengan app Kompas."}).catch(function(){$("qMsg").textContent="Tak dapat hidupkan kompas."});
+    }else if(window.DeviceOrientationEvent)go();
+    else $("qMsg").textContent="Telefon ini tiada kompas untuk pelayar. Guna 285° dengan app Kompas.";
+  };
+  $("openQibla").onclick=function(){openOv("ovQibla")};
+
+  /* ---------- phrases ---------- */
+  var PH=[
+    ["Asas",[
+      ["Terima kasih","谢谢","xièxie"],
+      ["Maaf, tumpang tanya","不好意思，请问一下","bù hǎo yìsi, qǐngwèn yíxià"],
+      ["Saya tak faham","我听不懂","wǒ tīng bù dǒng"],
+      ["Boleh cakap Bahasa Inggeris?","你会说英语吗？","nǐ huì shuō Yīngyǔ ma?"],
+      ["Tolong tulis di sini","请写在这里","qǐng xiě zài zhèlǐ"],
+      ["Ya / Tidak","是 / 不是","shì / bú shì"]]],
+    ["Makan",[
+      ["Ada makanan halal?","有清真食物吗？","yǒu qīngzhēn shíwù ma?"],
+      ["Saya Muslim, tak makan babi","我是穆斯林，不吃猪肉","wǒ shì Mùsīlín, bù chī zhūròu"],
+      ["Tanpa lemak babi dan arak","不要猪油，不要酒","bú yào zhūyóu, bú yào jiǔ"],
+      ["Ada restoran halal dekat sini?","附近有清真餐厅吗？","fùjìn yǒu qīngzhēn cāntīng ma?"],
+      ["Tak nak pedas","不要辣","bú yào là"],
+      ["Air kosong (suam)","白开水","báikāishuǐ"],
+      ["Bungkus","打包","dǎbāo"],
+      ["Kira bil","买单","mǎidān"]]],
+    ["Beli-belah",[
+      ["Berapa harga?","多少钱？","duōshao qián?"],
+      ["Mahal sangat","太贵了","tài guì le"],
+      ["Boleh kurang sikit?","可以便宜一点吗？","kěyǐ piányi yìdiǎn ma?"],
+      ["Beli banyak, boleh murah?","买多一点，可以便宜吗？","mǎi duō yìdiǎn, kěyǐ piányi ma?"],
+      ["Harga borong berapa?","批发价多少？","pīfā jià duōshao?"],
+      ["Ada saiz lain?","有别的尺码吗？","yǒu bié de chǐmǎ ma?"],
+      ["Ada warna lain?","有别的颜色吗？","yǒu bié de yánsè ma?"],
+      ["Boleh bayar tunai?","可以付现金吗？","kěyǐ fù xiànjīn ma?"],
+      ["Saya tengok-tengok saja","我只是看看","wǒ zhǐshì kànkan"]]],
+    ["Arah & pengangkutan",[
+      ["Tandas di mana?","洗手间在哪里？","xǐshǒujiān zài nǎlǐ?"],
+      ["Masjid di mana?","清真寺在哪里？","qīngzhēnsì zài nǎlǐ?"],
+      ["Tolong bawa saya ke alamat ini","请带我去这个地址","qǐng dài wǒ qù zhège dìzhǐ"],
+      ["Berhenti di sini","请在这里停车","qǐng zài zhèlǐ tíngchē"],
+      ["Stesen metro di mana?","地铁站在哪里？","dìtiě zhàn zài nǎlǐ?"],
+      ["Saya sesat","我迷路了","wǒ mílù le"]]],
+    ["Kecemasan",[
+      ["Tolong!","救命！","jiùmìng!"],
+      ["Tolong panggil polis","请帮我报警","qǐng bāng wǒ bàojǐng"],
+      ["Saya perlukan doktor","我需要看医生","wǒ xūyào kàn yīshēng"],
+      ["Hospital di mana?","医院在哪里？","yīyuàn zài nǎlǐ?"],
+      ["Saya hilang pasport","我的护照丢了","wǒ de hùzhào diū le"]]]
+  ];
+  (function(){var box=$("ph");PH.forEach(function(g){box.appendChild(el("h3",null,g[0]));var ul=el("ul");
+    g[1].forEach(function(p){var li=el("li"),b=el("button");b.appendChild(el("span","m",p[0]));b.appendChild(el("span","z",p[1]));b.appendChild(el("span","p",p[2]));
+      b.onclick=function(){showTr({dir:"ms2zh",src:p[0],zh:p[1],py:p[2],ms:""});window.scrollTo({top:0,behavior:"smooth"})};li.appendChild(b);ul.appendChild(li)});
+    box.appendChild(ul)})})();
 
   /* ---------- boot ---------- */
   function stale(x,h){return !x||Date.now()-x.at>h*3600e3}
